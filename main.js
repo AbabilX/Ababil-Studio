@@ -1,6 +1,7 @@
-const { BrowserWindow, app, ipcMain } = require('electron');
+const { BrowserWindow, app, ipcMain, dialog } = require('electron');
 const url = require('url');
 const path = require('path');
+const fs = require('fs');
 
 // Native library service
 let nativeLib = null;
@@ -66,13 +67,19 @@ async function initializeNativeLibrary() {
             };
         }
 
-        // Define the function signatures 
+        // Define the function signatures
         const makeHttpRequest = lib.func('make_http_request', 'str', ['str']);
         const freeString = lib.func('free_string', 'void', ['str']);
+        const parsePostmanCollection = lib.func(
+            'parse_postman_collection',
+            'str',
+            ['str']
+        );
 
         nativeLib = {
             makeHttpRequest,
             freeString,
+            parsePostmanCollection,
             initialized: true,
             libraryPath: loadedPath,
         };
@@ -132,6 +139,58 @@ function setupIpcHandlers() {
             initialized: nativeLib.initialized,
             libraryPath: nativeLib.libraryPath,
         };
+    });
+
+    // Parse Postman collection
+    ipcMain.handle(
+        'native:parsePostmanCollection',
+        async (event, jsonString) => {
+            if (
+                !nativeLib ||
+                !nativeLib.initialized ||
+                !nativeLib.parsePostmanCollection
+            ) {
+                return JSON.stringify({
+                    error: 'Native library not initialized',
+                });
+            }
+
+            try {
+                const result = nativeLib.parsePostmanCollection(jsonString);
+                return (
+                    result ||
+                    JSON.stringify({
+                        error: 'Null response from native library',
+                    })
+                );
+            } catch (error) {
+                return JSON.stringify({ error: error.message });
+            }
+        }
+    );
+
+    // File picker for Postman import
+    ipcMain.handle('native:selectPostmanFile', async () => {
+        const result = await dialog.showOpenDialog({
+            title: 'Select Postman Collection File',
+            filters: [
+                { name: 'JSON Files', extensions: ['json'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+            properties: ['openFile'],
+        });
+
+        if (result.canceled || result.filePaths.length === 0) {
+            return null;
+        }
+
+        try {
+            const filePath = result.filePaths[0];
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            return { filePath, content: fileContent };
+        } catch (error) {
+            return { error: error.message };
+        }
     });
 
     ipcHandlersSetup = true;

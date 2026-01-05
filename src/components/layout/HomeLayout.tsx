@@ -4,7 +4,11 @@ import {
     getNativeLibraryStatus,
 } from '../../services/httpClient';
 import { HttpResponse } from '../../types/http';
-import { SavedRequest, Collection, httpRequestToSavedRequest } from '../../types/collection';
+import {
+    SavedRequest,
+    Collection,
+    httpRequestToSavedRequest,
+} from '../../types/collection';
 import {
     saveRequest,
     loadRequests,
@@ -33,7 +37,9 @@ export function HomeLayout() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [collections, setCollections] = useState<Collection[]>([]);
     const [requests, setRequests] = useState<SavedRequest[]>([]);
-    const [activeRequestId, setActiveRequestId] = useState<string | undefined>();
+    const [activeRequestId, setActiveRequestId] = useState<
+        string | undefined
+    >();
     const [currentRequestName, setCurrentRequestName] = useState<string>('');
 
     // Load data on mount
@@ -152,6 +158,7 @@ export function HomeLayout() {
             onNewCollection={refreshData}
             onNewRequest={handleNewRequest}
             onCollectionCreated={refreshData}
+            onImportComplete={refreshData}
         />
     );
 
@@ -194,7 +201,5 @@ export function HomeLayout() {
         </div>
     );
 
-    return (
-        <ResizableLayout sidebar={sidebar} mainContent={mainContent} />
-    );
+    return <ResizableLayout sidebar={sidebar} mainContent={mainContent} />;
 }

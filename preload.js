@@ -19,6 +19,16 @@ contextBridge.exposeInMainWorld('ababilAPI', {
     return ipcRenderer.invoke('native:getStatus');
   },
 
+  // Parse Postman collection
+  parsePostmanCollection: (jsonString) => {
+    return ipcRenderer.invoke('native:parsePostmanCollection', jsonString);
+  },
+
+  // Select Postman file
+  selectPostmanFile: () => {
+    return ipcRenderer.invoke('native:selectPostmanFile');
+  },
+
   // Platform info
   platform: process.platform,
 });

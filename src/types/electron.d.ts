@@ -11,6 +11,8 @@ export interface NativeLibraryStatus {
 export interface AbabilAPI {
     makeHttpRequest: (requestJson: string) => Promise<string>;
     getNativeLibraryStatus: () => Promise<NativeLibraryStatus>;
+    parsePostmanCollection: (jsonString: string) => Promise<string>;
+    selectPostmanFile: () => Promise<{ filePath: string; content: string } | { error: string } | null>;
     platform: string;
 }
 
