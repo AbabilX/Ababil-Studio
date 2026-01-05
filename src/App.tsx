@@ -19,6 +19,8 @@ import {
     SelectValue,
 } from './components/ui/select';
 import { Loader2, Send, Zap } from 'lucide-react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 // HTTP Methods
 const HTTP_METHODS = [
@@ -44,10 +46,22 @@ function App() {
         error?: string;
         libraryPath?: string;
     } | null>(null);
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     // Check native library status on mount
     useEffect(() => {
         checkLibraryStatus();
+    }, []);
+
+    // Detect dark mode
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        setIsDarkMode(mediaQuery.matches);
+        
+        const handleChange = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
+        mediaQuery.addEventListener('change', handleChange);
+        
+        return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
     const checkLibraryStatus = async () => {
@@ -94,9 +108,48 @@ function App() {
         }
     };
 
+    const detectLanguage = (body: string): string => {
+        const trimmed = body.trim();
+        
+        // Try to parse as JSON
+        try {
+            JSON.parse(trimmed);
+            return 'json';
+        } catch {
+            // Not JSON
+        }
+        
+        // Check for XML
+        if (trimmed.startsWith('<?xml') || trimmed.startsWith('<')) {
+            return 'xml';
+        }
+        
+        // Check for HTML
+        if (trimmed.match(/^<html[\s>]/i) || trimmed.match(/^<!DOCTYPE html/i)) {
+            return 'html';
+        }
+        
+        // Check for CSS
+        if (trimmed.includes('{') && trimmed.includes('}') && trimmed.includes(':')) {
+            const cssPattern = /[a-zA-Z-]+\s*:\s*[^;]+;/;
+            if (cssPattern.test(trimmed)) {
+                return 'css';
+            }
+        }
+        
+        // Check for JavaScript
+        if (trimmed.includes('function') || trimmed.includes('=>') || trimmed.includes('const ') || trimmed.includes('let ')) {
+            return 'javascript';
+        }
+        
+        // Default to plain text
+        return 'text';
+    };
+
     const formatBody = (body: string): string => {
         try {
-            return JSON.stringify(JSON.parse(body), null, 2);
+            const parsed = JSON.parse(body);
+            return JSON.stringify(parsed, null, 2);
         } catch {
             return body;
         }
@@ -276,10 +329,25 @@ function App() {
                                     </TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="body">
-                                    <div className="mt-4 p-4 bg-muted rounded-lg max-h-[400px] overflow-auto">
-                                        <pre className="text-sm font-mono whitespace-pre-wrap break-words">
+                                    <div className="mt-4 rounded-lg max-h-[400px] overflow-auto border border-border">
+                                        <SyntaxHighlighter
+                                            language={detectLanguage(response.body)}
+                                            style={isDarkMode ? vscDarkPlus : oneLight}
+                                            customStyle={{
+                                                margin: 0,
+                                                padding: '1rem',
+                                                borderRadius: '0.5rem',
+                                                background: 'hsl(var(--muted))',
+                                                fontSize: '0.875rem',
+                                            }}
+                                            codeTagProps={{
+                                                style: {
+                                                    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+                                                },
+                                            }}
+                                        >
                                             {formatBody(response.body)}
-                                        </pre>
+                                        </SyntaxHighlighter>
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="headers">

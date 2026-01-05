@@ -166,7 +166,7 @@ async function createWindow() {
 
     // Open DevTools in development
     if (process.env.NODE_ENV !== 'production') {
-        mainWindow.webContents.openDevTools();
+        // mainWindow.webContents.openDevTools();
     }
 }
 
