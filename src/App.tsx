@@ -20,7 +20,10 @@ import {
 } from './components/ui/select';
 import { Loader2, Send, Zap } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {
+    vscDarkPlus,
+    oneLight,
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 // HTTP Methods
 const HTTP_METHODS = [
@@ -57,10 +60,11 @@ function App() {
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         setIsDarkMode(mediaQuery.matches);
-        
-        const handleChange = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
+
+        const handleChange = (e: MediaQueryListEvent) =>
+            setIsDarkMode(e.matches);
         mediaQuery.addEventListener('change', handleChange);
-        
+
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
@@ -110,7 +114,7 @@ function App() {
 
     const detectLanguage = (body: string): string => {
         const trimmed = body.trim();
-        
+
         // Try to parse as JSON
         try {
             JSON.parse(trimmed);
@@ -118,30 +122,42 @@ function App() {
         } catch {
             // Not JSON
         }
-        
+
         // Check for XML
         if (trimmed.startsWith('<?xml') || trimmed.startsWith('<')) {
             return 'xml';
         }
-        
+
         // Check for HTML
-        if (trimmed.match(/^<html[\s>]/i) || trimmed.match(/^<!DOCTYPE html/i)) {
+        if (
+            trimmed.match(/^<html[\s>]/i) ||
+            trimmed.match(/^<!DOCTYPE html/i)
+        ) {
             return 'html';
         }
-        
+
         // Check for CSS
-        if (trimmed.includes('{') && trimmed.includes('}') && trimmed.includes(':')) {
+        if (
+            trimmed.includes('{') &&
+            trimmed.includes('}') &&
+            trimmed.includes(':')
+        ) {
             const cssPattern = /[a-zA-Z-]+\s*:\s*[^;]+;/;
             if (cssPattern.test(trimmed)) {
                 return 'css';
             }
         }
-        
+
         // Check for JavaScript
-        if (trimmed.includes('function') || trimmed.includes('=>') || trimmed.includes('const ') || trimmed.includes('let ')) {
+        if (
+            trimmed.includes('function') ||
+            trimmed.includes('=>') ||
+            trimmed.includes('const ') ||
+            trimmed.includes('let ')
+        ) {
             return 'javascript';
         }
-        
+
         // Default to plain text
         return 'text';
     };
@@ -331,18 +347,25 @@ function App() {
                                 <TabsContent value="body">
                                     <div className="mt-4 rounded-lg max-h-[400px] overflow-auto border border-border">
                                         <SyntaxHighlighter
-                                            language={detectLanguage(response.body)}
-                                            style={isDarkMode ? vscDarkPlus : oneLight}
+                                            language={detectLanguage(
+                                                response.body
+                                            )}
+                                            style={
+                                                isDarkMode
+                                                    ? vscDarkPlus
+                                                    : oneLight
+                                            }
                                             customStyle={{
                                                 margin: 0,
                                                 padding: '1rem',
                                                 borderRadius: '0.5rem',
-                                                background: 'hsl(var(--muted))',
+                                                background: '#000000',
                                                 fontSize: '0.875rem',
                                             }}
                                             codeTagProps={{
                                                 style: {
-                                                    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+                                                    fontFamily:
+                                                        'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
                                                 },
                                             }}
                                         >
