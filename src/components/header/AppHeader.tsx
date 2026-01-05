@@ -1,4 +1,4 @@
-import { Zap } from 'lucide-react';
+import { FlashIcon } from 'hugeicons-react';
 
 interface AppHeaderProps {
     libraryStatus: {
@@ -30,7 +30,7 @@ export function AppHeader({ libraryStatus }: AppHeaderProps) {
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
                     {libraryStatus?.initialized ? (
                         <>
-                            <Zap className="w-3 h-3" />
+                            <FlashIcon className="w-3 h-3" />
                             Rust Core Connected
                         </>
                     ) : (

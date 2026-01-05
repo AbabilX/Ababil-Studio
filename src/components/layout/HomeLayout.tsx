@@ -4,9 +4,18 @@ import {
     getNativeLibraryStatus,
 } from '../../services/httpClient';
 import { HttpResponse } from '../../types/http';
+import { SavedRequest, Collection, httpRequestToSavedRequest } from '../../types/collection';
+import {
+    saveRequest,
+    loadRequests,
+    loadCollections,
+} from '../../services/storage';
 import { AppHeader } from '../header/AppHeader';
 import { RequestSection } from '../request/RequestSection';
 import { ResponseSection } from '../response/ResponseSection';
+import { Sidebar } from '../sidebar/Sidebar';
+import { ResizableLayout } from './ResizableLayout';
+import { createSimpleRequest } from '../../types/http';
 
 export function HomeLayout() {
     const [method, setMethod] = useState('GET');
@@ -22,6 +31,15 @@ export function HomeLayout() {
         libraryPath?: string;
     } | null>(null);
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const [collections, setCollections] = useState<Collection[]>([]);
+    const [requests, setRequests] = useState<SavedRequest[]>([]);
+    const [activeRequestId, setActiveRequestId] = useState<string | undefined>();
+    const [currentRequestName, setCurrentRequestName] = useState<string>('');
+
+    // Load data on mount
+    useEffect(() => {
+        refreshData();
+    }, []);
 
     // Check native library status on mount
     useEffect(() => {
@@ -39,6 +57,11 @@ export function HomeLayout() {
 
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
+
+    const refreshData = () => {
+        setCollections(loadCollections());
+        setRequests(loadRequests());
+    };
 
     const checkLibraryStatus = async () => {
         const status = await getNativeLibraryStatus();
@@ -84,8 +107,56 @@ export function HomeLayout() {
         }
     };
 
-    return (
-        <div className="min-h-screen bg-background p-6">
+    const handleRequestSelect = (request: SavedRequest) => {
+        setActiveRequestId(request.id);
+        setCurrentRequestName(request.name);
+        setMethod(request.method);
+        setUrl(request.url);
+        setRequestBody(request.body || '');
+        setResponse(null);
+    };
+
+    const handleSave = (name: string, collectionId?: string) => {
+        const request = createSimpleRequest(
+            method,
+            url,
+            {},
+            requestBody || undefined
+        );
+        const savedRequestData = httpRequestToSavedRequest(
+            request,
+            name,
+            collectionId
+        );
+        const saved = saveRequest(savedRequestData);
+        setActiveRequestId(saved.id);
+        setCurrentRequestName(saved.name);
+        refreshData();
+    };
+
+    const handleNewRequest = () => {
+        setActiveRequestId(undefined);
+        setCurrentRequestName('');
+        setMethod('GET');
+        setUrl('');
+        setRequestBody('');
+        setResponse(null);
+    };
+
+    const sidebar = (
+        <Sidebar
+            collections={collections}
+            requests={requests}
+            onRequestSelect={handleRequestSelect}
+            activeRequestId={activeRequestId}
+            onNewCollection={refreshData}
+            onNewRequest={handleNewRequest}
+            onCollectionCreated={refreshData}
+        />
+    );
+
+    const mainContent = (
+        <div className="h-full overflow-y-auto bg-background p-6">
             <div className="max-w-5xl mx-auto space-y-6">
                 {/* Header */}
                 <AppHeader libraryStatus={libraryStatus} />
@@ -96,11 +167,14 @@ export function HomeLayout() {
                     url={url}
                     requestBody={requestBody}
                     loading={loading}
+                    currentRequestName={currentRequestName}
+                    collections={collections}
                     onMethodChange={setMethod}
                     onUrlChange={setUrl}
                     onBodyChange={setRequestBody}
                     onSend={handleSend}
                     onKeyDown={handleKeyDown}
+                    onSave={handleSave}
                 />
 
                 {/* Response Section */}
@@ -118,5 +192,9 @@ export function HomeLayout() {
                 </footer>
             </div>
         </div>
+    );
+
+    return (
+        <ResizableLayout sidebar={sidebar} mainContent={mainContent} />
     );
 }

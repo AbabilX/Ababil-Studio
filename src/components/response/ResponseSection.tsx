@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Loading01Icon } from 'hugeicons-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import {
     vscDarkPlus,
@@ -46,7 +46,7 @@ export function ResponseSection({
                 {loading ? (
                     <div className="flex items-center justify-center h-[300px]">
                         <div className="flex flex-col items-center gap-3">
-                            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                            <Loading01Icon className="w-8 h-8 animate-spin text-muted-foreground" />
                             <span className="text-sm text-muted-foreground">
                                 Executing request...
                             </span>
