@@ -1,6 +1,5 @@
 <div align="center">
-  <h1>🚀 Ababil Studio</h1>
-  <p><strong>Lightning-fast API testing tool powered by Rust</strong></p>
+  <img src="readme/banner.png" alt="Ababil Studio Banner" width="100%">
   
   <p>
     <a href="https://github.com/Muradian-OSP/Ababil-Desktop/stargazers"><img src="https://img.shields.io/github/stars/Muradian-OSP/Ababil-Desktop?style=social" alt="GitHub stars"></a>

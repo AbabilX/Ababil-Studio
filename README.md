@@ -1,6 +1,5 @@
 <div align="center">
-  <h1>🚀 আবাবিল স্টুডিও</h1>
-  <p><strong>Rust দ্বারা চালিত অতি দ্রুতগতির API টেস্টিং টুল</strong></p>
+  <img src="readme/banner.png" alt="Ababil Studio Banner" width="100%">
   
   <p>
     <a href="https://github.com/Muradian-OSP/Ababil-Desktop/stargazers"><img src="https://img.shields.io/github/stars/Muradian-OSP/Ababil-Desktop?style=social" alt="GitHub stars"></a>
