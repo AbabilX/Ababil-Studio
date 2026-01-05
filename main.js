@@ -47,7 +47,10 @@ async function initializeNativeLibrary() {
                     break;
                 }
             } catch (e) {
-                console.log(`[NativeLibrary] Failed to load from ${libPath}:`, e);
+                console.log(
+                    `[NativeLibrary] Failed to load from ${libPath}:`,
+                    e
+                );
             }
         }
 
@@ -63,7 +66,7 @@ async function initializeNativeLibrary() {
             };
         }
 
-        // Define the function signatures
+        // Define the function signatures 
         const makeHttpRequest = lib.func('make_http_request', 'str', ['str']);
         const freeString = lib.func('free_string', 'void', ['str']);
 

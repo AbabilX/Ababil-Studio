@@ -91,18 +91,22 @@ export function ResizableLayout({
                 {!isCollapsed && (
                     <div className="h-full overflow-y-auto">{sidebar}</div>
                 )}
-                {/* Toggle Button */}
-                <button
-                    onClick={toggleCollapse}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full z-10 bg-card border border-border rounded-r-lg p-1 hover:bg-accent transition-colors"
-                >
-                    {isCollapsed ? (
-                        <ArrowRight01Icon className="w-4 h-4" />
-                    ) : (
-                        <ArrowLeft01Icon className="w-4 h-4" />
-                    )}
-                </button>
             </div>
+
+            {/* Toggle Button - Always visible */}
+            <button
+                onClick={toggleCollapse}
+                className="absolute top-1/2 -translate-y-1/2 z-20 bg-card border border-border rounded-r-lg p-1.5 hover:bg-accent transition-all duration-300 shadow-sm"
+                style={{
+                    left: isCollapsed ? 0 : `${sidebarWidth}px`,
+                }}
+            >
+                {isCollapsed ? (
+                    <ArrowRight01Icon className="w-4 h-4" />
+                ) : (
+                    <ArrowLeft01Icon className="w-4 h-4" />
+                )}
+            </button>
 
             {/* Resize Handle */}
             {!isCollapsed && (
