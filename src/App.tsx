@@ -5,27 +5,37 @@ import {
     getStatusText,
 } from './services/httpClient';
 import { HttpResponse } from './types/http';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Badge } from '../components/ui/badge';
+import { Button } from './components/ui/button';
+import { Input } from './components/ui/input';
+import { Textarea } from './components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Badge } from './components/ui/badge';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '../components/ui/select';
+} from './components/ui/select';
 import { Loader2, Send, Zap } from 'lucide-react';
 
 // HTTP Methods
-const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
+const HTTP_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'HEAD',
+    'OPTIONS',
+];
 
 function App() {
     const [method, setMethod] = useState('GET');
-    const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/posts/1');
+    const [url, setUrl] = useState(
+        'https://jsonplaceholder.typicode.com/posts/1'
+    );
     const [requestBody, setRequestBody] = useState('');
     const [response, setResponse] = useState<HttpResponse | null>(null);
     const [loading, setLoading] = useState(false);
@@ -161,7 +171,9 @@ function App() {
                                 <SelectTrigger className="w-[130px]">
                                     <SelectValue>
                                         <span
-                                            className={`font-semibold ${getMethodColor(method)}`}
+                                            className={`font-semibold ${getMethodColor(
+                                                method
+                                            )}`}
                                         >
                                             {method}
                                         </span>
@@ -171,7 +183,9 @@ function App() {
                                     {HTTP_METHODS.map((m) => (
                                         <SelectItem key={m} value={m}>
                                             <span
-                                                className={`font-semibold ${getMethodColor(m)}`}
+                                                className={`font-semibold ${getMethodColor(
+                                                    m
+                                                )}`}
                                             >
                                                 {m}
                                             </span>
@@ -228,7 +242,11 @@ function App() {
                             <CardTitle className="text-lg">Response</CardTitle>
                             {response && (
                                 <div className="flex items-center gap-3">
-                                    <Badge variant={getStatusVariant(response.status_code)}>
+                                    <Badge
+                                        variant={getStatusVariant(
+                                            response.status_code
+                                        )}
+                                    >
                                         {response.status_code}{' '}
                                         {getStatusText(response.status_code)}
                                     </Badge>
