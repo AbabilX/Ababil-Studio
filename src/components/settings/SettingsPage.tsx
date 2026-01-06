@@ -1,65 +1,50 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Label } from '../ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '../ui/select';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useState } from 'react';
+import { SettingsSidebar, SettingsSection } from './SettingsSidebar';
+import { ThemesSection } from './ThemesSection';
 
 export function SettingsPage() {
-    const { theme, setTheme } = useTheme();
+    const [activeSection, setActiveSection] =
+        useState<SettingsSection>('themes');
 
-    return (
-        <div className="h-full overflow-y-auto bg-background p-6">
-            <div className="max-w-5xl mx-auto space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold mb-2">Settings</h1>
-                    <p className="text-muted-foreground">
-                        Customize your Ababil Studio experience
-                    </p>
-                </div>
-
-                {/* Appearance Section */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Appearance</CardTitle>
-                        <CardDescription>
-                            Choose how Ababil Studio looks to you
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="theme-select">Theme</Label>
-                            <Select value={theme} onValueChange={setTheme}>
-                                <SelectTrigger id="theme-select" className="w-[200px]">
-                                    <SelectValue placeholder="Select theme" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="system">
-                                        System Default
-                                    </SelectItem>
-                                    <SelectItem value="light">Light</SelectItem>
-                                    <SelectItem value="dark">Dark</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-sm text-muted-foreground">
-                                {theme === 'system' && 
-                                    'Theme will match your system preference'}
-                                {theme === 'light' && 
-                                    'Always use light theme'}
-                                {theme === 'dark' && 
-                                    'Always use dark theme'}
+    const renderContent = () => {
+        switch (activeSection) {
+            case 'themes':
+                return <ThemesSection />;
+            case 'general':
+            case 'shortcuts':
+            case 'ai':
+            case 'data':
+            case 'addons':
+            case 'certificates':
+            case 'proxy':
+            case 'update':
+            case 'about':
+                return (
+                    <div className="h-full overflow-y-auto bg-background p-8">
+                        <div className="max-w-4xl mx-auto">
+                            <h1 className="text-3xl font-bold mb-4 capitalize">
+                                {activeSection}
+                            </h1>
+                            <p className="text-muted-foreground">
+                                {activeSection.charAt(0).toUpperCase() +
+                                    activeSection.slice(1)}{' '}
+                                settings coming soon.
                             </p>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
 
-                {/* More settings can be added here */}
-            </div>
+    return (
+        <div className="h-full flex overflow-hidden">
+            <SettingsSidebar
+                activeSection={activeSection}
+                onSectionChange={setActiveSection}
+            />
+            <div className="flex-1 overflow-hidden">{renderContent()}</div>
         </div>
     );
 }
-

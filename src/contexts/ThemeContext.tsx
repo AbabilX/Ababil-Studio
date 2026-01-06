@@ -25,6 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Apply theme immediately on mount
     useEffect(() => {
         applyTheme(initialTheme);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run once on mount
 
     // Apply theme when theme changes
