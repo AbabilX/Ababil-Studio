@@ -113,25 +113,48 @@ export function updateCollection(
     return collections[index];
 }
 
+/**
+ * Recursively collect all collection IDs (including nested ones)
+ */
+function collectAllCollectionIds(
+    collectionId: string,
+    collections: Collection[],
+    collectedIds: Set<string>
+): void {
+    if (collectedIds.has(collectionId)) return;
+    collectedIds.add(collectionId);
+
+    const collection = collections.find((c) => c.id === collectionId);
+    if (!collection) return;
+
+    // Recursively collect child collection IDs
+    if (collection.collections && collection.collections.length > 0) {
+        collection.collections.forEach((childId) => {
+            collectAllCollectionIds(childId, collections, collectedIds);
+        });
+    }
+}
+
 export function deleteCollection(id: string): boolean {
     const collections = loadCollections();
     const collection = collections.find((c) => c.id === id);
     if (!collection) return false;
 
-    // Recursively delete child collections first
-    if (collection.collections && collection.collections.length > 0) {
-        collection.collections.forEach((childId) => {
-            deleteCollection(childId);
-        });
-    }
+    // Collect all collection IDs to delete (including nested ones)
+    const collectionIdsToDelete = new Set<string>();
+    collectAllCollectionIds(id, collections, collectionIdsToDelete);
 
-    // Delete all requests in this collection (including nested ones)
+    // Get all requests and filter out those belonging to any of the collections to delete
     const requests = loadRequests();
-    const updatedRequests = requests.filter((r) => r.collectionId !== id);
+    const updatedRequests = requests.filter(
+        (r) => !r.collectionId || !collectionIdsToDelete.has(r.collectionId)
+    );
     localStorage.setItem(REQUESTS_KEY, JSON.stringify(updatedRequests));
 
-    // Remove this collection
-    const filtered = collections.filter((c) => c.id !== id);
+    // Remove all collections (parent and nested)
+    const filtered = collections.filter(
+        (c) => !collectionIdsToDelete.has(c.id)
+    );
     localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(filtered));
     return true;
 }
