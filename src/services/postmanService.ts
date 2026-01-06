@@ -154,12 +154,13 @@ function convertPostmanRequestToHttpRequest(
 
 /**
  * Recursively convert Postman collection items to our format
+ * Returns only direct children (not nested collections - those are already linked via parent's collections array)
  */
 function convertPostmanItems(
     items: PostmanCollectionItem[],
     parentCollectionId?: string
 ): ConversionResult {
-    const allCollections: Collection[] = [];
+    const directCollections: Collection[] = []; // Only direct children, not nested
     const allRequests: SavedRequest[] = [];
 
     for (const item of items) {
@@ -197,15 +198,17 @@ function convertPostmanItems(
             // Get updated collection
             const updatedCollection = getCollection(collection.id);
             if (updatedCollection) {
-                allCollections.push(updatedCollection);
+                // Only add direct children to the result
+                // Nested collections are already linked via the parent's collections array
+                directCollections.push(updatedCollection);
             }
 
-            allCollections.push(...childResult.collections);
+            // Add nested requests (they're already linked to their parent collection)
             allRequests.push(...childResult.requests);
         }
     }
 
-    return { collections: allCollections, requests: allRequests };
+    return { collections: directCollections, requests: allRequests };
 }
 
 /**
@@ -243,11 +246,11 @@ export async function importPostmanCollection(
     // Get updated parent collection
     const updatedParent = getCollection(parentCollection.id);
 
-    // Return parent + all children
+    // Return only the parent collection
+    // Nested collections are already linked via parent's collections array
+    // The Sidebar component will handle the nested structure correctly
     return {
-        collections: updatedParent
-            ? [updatedParent, ...result.collections]
-            : result.collections,
+        collections: updatedParent ? [updatedParent] : [],
         requests: result.requests,
     };
 }
