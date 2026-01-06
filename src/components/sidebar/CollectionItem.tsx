@@ -6,8 +6,11 @@ import { SavedRequest } from '../../types/collection';
 interface CollectionItemProps {
     collection: Collection;
     requests: SavedRequest[];
+    collections: Collection[]; // All collections for nested rendering
     isExpanded: boolean;
+    expandedCollections: Set<string>;
     onToggle: () => void;
+    onCollectionToggle: (collectionId: string) => void;
     onRequestClick: (request: SavedRequest) => void;
     activeRequestId?: string;
 }
@@ -15,14 +18,24 @@ interface CollectionItemProps {
 export function CollectionItem({
     collection,
     requests,
+    collections,
     isExpanded,
+    expandedCollections,
     onToggle,
+    onCollectionToggle,
     onRequestClick,
     activeRequestId,
 }: CollectionItemProps) {
     const collectionRequests = requests.filter(
         (r) => r.collectionId === collection.id
     );
+
+    // Get child collections (nested collections)
+    const childCollections = collections.filter(
+        (c) => collection.collections?.includes(c.id)
+    );
+
+    const totalItems = collectionRequests.length + childCollections.length;
 
     return (
         <div className="select-none">
@@ -44,11 +57,28 @@ export function CollectionItem({
                     {collection.name}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                    {collectionRequests.length}
+                    {totalItems}
                 </span>
             </div>
             {isExpanded && (
                 <div className="ml-6 mt-1 space-y-0.5">
+                    {/* Render nested collections */}
+                    {childCollections.map((childCollection) => (
+                        <CollectionItem
+                            key={childCollection.id}
+                            collection={childCollection}
+                            requests={requests}
+                            collections={collections}
+                            isExpanded={expandedCollections.has(childCollection.id)}
+                            expandedCollections={expandedCollections}
+                            onToggle={() => onCollectionToggle(childCollection.id)}
+                            onCollectionToggle={onCollectionToggle}
+                            onRequestClick={onRequestClick}
+                            activeRequestId={activeRequestId}
+                        />
+                    ))}
+
+                    {/* Render requests */}
                     {collectionRequests.map((request) => (
                         <RequestItem
                             key={request.id}
@@ -57,9 +87,11 @@ export function CollectionItem({
                             isActive={request.id === activeRequestId}
                         />
                     ))}
-                    {collectionRequests.length === 0 && (
+
+                    {/* Empty state */}
+                    {totalItems === 0 && (
                         <div className="px-2 py-1 text-xs text-muted-foreground italic">
-                            No requests
+                            No items
                         </div>
                     )}
                 </div>

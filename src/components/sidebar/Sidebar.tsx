@@ -46,14 +46,24 @@ export function Sidebar({
     const [importing, setImporting] = useState(false);
     const [importError, setImportError] = useState<string | null>(null);
 
+    // Filter collections to only show top-level ones (not nested under other collections)
+    const topLevelCollections = useMemo(() => {
+        return collections.filter(
+            (c) =>
+                !collections.some((parent) =>
+                    parent.collections?.includes(c.id)
+                )
+        );
+    }, [collections]);
+
     // Filter collections and requests based on search
     const filteredCollections = useMemo(() => {
-        if (!searchQuery) return collections;
+        if (!searchQuery) return topLevelCollections;
         const query = searchQuery.toLowerCase();
-        return collections.filter((c) =>
+        return topLevelCollections.filter((c) =>
             c.name.toLowerCase().includes(query)
         );
-    }, [collections, searchQuery]);
+    }, [topLevelCollections, searchQuery]);
 
     const filteredRequests = useMemo(() => {
         if (!searchQuery) {
@@ -206,8 +216,11 @@ export function Sidebar({
                         key={collection.id}
                         collection={collection}
                         requests={requests}
+                        collections={collections}
                         isExpanded={expandedCollections.has(collection.id)}
+                        expandedCollections={expandedCollections}
                         onToggle={() => toggleCollection(collection.id)}
+                        onCollectionToggle={toggleCollection}
                         onRequestClick={onRequestSelect}
                         activeRequestId={activeRequestId}
                     />

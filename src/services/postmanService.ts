@@ -217,10 +217,39 @@ export async function importPostmanCollection(
     // Parse using Rust library
     const postmanCollection = await parsePostmanCollection(jsonString);
 
-    // Convert to our format (processes all nested items)
-    const result = convertPostmanItems(postmanCollection.item);
+    // Create parent collection wrapper using Postman collection name
+    const parentCollection = saveCollection({
+        name: postmanCollection.info.name || 'Imported Collection',
+        requests: [],
+        collections: [],
+    });
 
-    return result;
+    // Convert items under parent collection
+    const result = convertPostmanItems(
+        postmanCollection.item,
+        parentCollection.id
+    );
+
+    // Update parent with child collection IDs and request IDs
+    const childCollectionIds = result.collections.map((c) => c.id);
+    const childRequestIds = result.requests.map((r) => r.id);
+
+    updateCollection(parentCollection.id, {
+        collections:
+            childCollectionIds.length > 0 ? childCollectionIds : undefined,
+        requests: childRequestIds.length > 0 ? childRequestIds : undefined,
+    });
+
+    // Get updated parent collection
+    const updatedParent = getCollection(parentCollection.id);
+
+    // Return parent + all children
+    return {
+        collections: updatedParent
+            ? [updatedParent, ...result.collections]
+            : result.collections,
+        requests: result.requests,
+    };
 }
 
 // Postman Environment types
