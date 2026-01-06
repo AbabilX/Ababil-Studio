@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import {
     Select,
@@ -26,6 +25,7 @@ import { Collection } from '../../types/collection';
 import { Environment } from '../../types/environment';
 import { RequestHeader } from '../../types/http';
 import { VariableUrlInput } from './VariableUrlInput';
+import { VariableTextarea } from './VariableTextarea';
 import { HeadersTable } from './HeadersTable';
 
 interface RequestSectionProps {
@@ -167,12 +167,13 @@ export function RequestSection({
                                 <label className="text-sm font-medium">
                                     Request Body (JSON)
                                 </label>
-                                <Textarea
+                                <VariableTextarea
                                     value={requestBody}
-                                    onChange={(e) => onBodyChange(e.target.value)}
+                                    onChange={onBodyChange}
                                     placeholder='{"key": "value"}'
                                     rows={8}
-                                    className="font-mono text-sm resize-none"
+                                    activeEnvironment={activeEnvironment || null}
+                                    onEnvironmentUpdate={onEnvironmentUpdate}
                                 />
                             </div>
                         </TabsContent>

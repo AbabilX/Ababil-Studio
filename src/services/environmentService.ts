@@ -168,17 +168,26 @@ export function replaceVariables(
     let result = text;
     const variablePattern = /\{\{([^}]+)\}\}/g;
     let match: RegExpExecArray | null;
+    const replacements = new Map<string, string>();
 
+    // First pass: collect all unique variables and their values
     while ((match = variablePattern.exec(text)) !== null) {
         const varName = match[1].trim();
-        const variable = environment.variables.find(
-            (v) => v.key === varName && !v.disabled
-        );
-
-        if (variable) {
-            result = result.replace(match[0], variable.value);
+        if (!replacements.has(varName)) {
+            const variable = environment.variables.find(
+                (v) => v.key === varName && !v.disabled
+            );
+            if (variable) {
+                replacements.set(varName, variable.value);
+            }
         }
     }
+
+    // Second pass: replace all occurrences of each variable
+    replacements.forEach((value, varName) => {
+        const regex = new RegExp(`\\{\\{\\s*${varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\}\\}`, 'g');
+        result = result.replace(regex, value);
+    });
 
     return result;
 }
