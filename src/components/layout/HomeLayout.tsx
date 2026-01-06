@@ -22,18 +22,21 @@ import {
     replaceVariablesInBody,
     replaceVariablesInHeaders,
 } from '../../utils/variableReplacer';
+import { useTheme } from '../../contexts/ThemeContext';
 import { TopHeader } from '../header/TopHeader';
 import { LeftNav } from '../navigation/LeftNav';
 import { RequestSection } from '../request/RequestSection';
 import { ResponseSection } from '../response/ResponseSection';
 import { Sidebar } from '../sidebar/Sidebar';
 import { EnvironmentPage } from '../environment/EnvironmentPage';
+import { SettingsPage } from '../settings/SettingsPage';
 import { ResizableLayout } from './ResizableLayout';
 import { createSimpleRequest } from '../../types/http';
 
 type ViewType = 'collections' | 'environments' | 'settings';
 
 export function HomeLayout() {
+    const { effectiveTheme } = useTheme();
     const [currentView, setCurrentView] = useState<ViewType>('collections');
     const [method, setMethod] = useState('GET');
     const [url, setUrl] = useState(
@@ -42,7 +45,6 @@ export function HomeLayout() {
     const [requestBody, setRequestBody] = useState('');
     const [response, setResponse] = useState<HttpResponse | null>(null);
     const [loading, setLoading] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(false);
     const [collections, setCollections] = useState<Collection[]>([]);
     const [requests, setRequests] = useState<SavedRequest[]>([]);
     const [environments, setEnvironments] = useState<Environment[]>([]);
@@ -57,18 +59,6 @@ export function HomeLayout() {
     useEffect(() => {
         refreshData();
         refreshEnvironments();
-    }, []);
-
-    // Detect dark mode
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        setIsDarkMode(mediaQuery.matches);
-
-        const handleChange = (e: MediaQueryListEvent) =>
-            setIsDarkMode(e.matches);
-        mediaQuery.addEventListener('change', handleChange);
-
-        return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
     const refreshData = () => {
@@ -203,16 +193,7 @@ export function HomeLayout() {
         }
 
         if (currentView === 'settings') {
-            return (
-                <div className="h-full overflow-y-auto bg-background p-6">
-                    <div className="max-w-5xl mx-auto">
-                        <h1 className="text-2xl font-bold mb-4">Settings</h1>
-                        <p className="text-muted-foreground">
-                            Settings page coming soon.
-                        </p>
-                    </div>
-                </div>
-            );
+            return <SettingsPage />;
         }
 
         // Collections view (default)
@@ -241,7 +222,7 @@ export function HomeLayout() {
                     <ResponseSection
                         response={response}
                         loading={loading}
-                        isDarkMode={isDarkMode}
+                        isDarkMode={effectiveTheme === 'dark'}
                     />
 
                     {/* Footer */}

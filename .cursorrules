@@ -1,0 +1,284 @@
+# Ababil Studio - Cursor Rules
+
+## Project Overview
+Ababil Studio is a modern, high-performance API development and testing platform built as a Postman alternative. It combines Rust's performance with Electron's cross-platform capabilities and React's modern UI.
+
+**Key Features:**
+- HTTP request execution (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+- Collection management with nested collections support
+- Environment variables with `{{variable}}` syntax
+- Request/response history
+- Postman import/export support
+- Dark mode support
+
+## Architecture
+
+### Technology Stack
+- **Frontend**: React 19 + TypeScript + Tailwind CSS
+- **Desktop Framework**: Electron (v39.2.7)
+- **Backend Core**: Rust (reqwest for HTTP, tokio for async)
+- **FFI Bridge**: koffi (Node.js FFI library)
+- **UI Components**: shadcn/ui + Radix UI + Lucide React icons
+- **Storage**: localStorage (browser-based persistence)
+
+### Architecture Flow
+```
+React UI (Renderer Process)
+  ↓ IPC via contextBridge
+preload.js (exposes ababilAPI)
+  ↓ ipcRenderer.invoke
+main.js (Electron Main Process)
+  ↓ koffi FFI
+libababil_core.dylib/.so/.dll (Rust Library)
+  ↓ reqwest HTTP client
+HTTP Response
+```
+
+### Key Files
+- `main.js` - Electron main process, handles IPC and loads Rust library
+- `preload.js` - Exposes safe API to renderer via contextBridge
+- `src/App.tsx` - Root React component
+- `src/components/layout/HomeLayout.tsx` - Main application layout
+- `src/services/httpClient.ts` - HTTP request service (calls native library)
+- `src/services/storage.ts` - localStorage operations for requests/collections
+- `src/services/environmentService.ts` - Environment variable management
+- `core/src/lib.rs` - Rust core library (HTTP execution)
+- `core/Cargo.toml` - Rust dependencies
+
+## File Structure
+
+### Source Code (`src/`)
+- `components/` - React components organized by feature
+  - `layout/` - Layout components (HomeLayout, ResizableLayout)
+  - `sidebar/` - Sidebar with collections and requests
+  - `request/` - Request builder UI
+  - `response/` - Response viewer with syntax highlighting
+  - `environment/` - Environment management UI
+  - `header/` - Top header with environment selector
+  - `navigation/` - Left navigation menu
+  - `ui/` - Reusable UI components (shadcn/ui based)
+- `services/` - Business logic services
+  - `httpClient.ts` - HTTP request execution
+  - `storage.ts` - localStorage CRUD operations
+  - `environmentService.ts` - Environment variable resolution
+  - `postmanService.ts` - Postman import/export
+- `types/` - TypeScript type definitions
+  - `collection.ts` - SavedRequest, Collection interfaces
+  - `environment.ts` - Environment, EnvironmentVariable interfaces
+  - `http.ts` - HttpRequest, HttpResponse interfaces
+  - `electron.d.ts` - Electron API type definitions
+- `utils/` - Utility functions
+  - `variableReplacer.ts` - Variable replacement in URLs/headers/body
+  - `helpers.ts` - General helper functions
+  - `constants.ts` - Application constants
+
+### Rust Core (`core/`)
+- `src/lib.rs` - Main library entry point, FFI exports
+- `src/models/` - Rust data models matching TypeScript types
+- `src/postman.rs` - Postman collection/environment parsing
+
+## Key Patterns & Conventions
+
+### TypeScript/React
+- Use functional components with hooks
+- State management via React useState/useEffect
+- Type safety: All components and services are typed
+- Component organization: Feature-based folder structure
+- Styling: Tailwind CSS with shadcn/ui components
+- Path aliases: `@/*` maps to root (configured in tsconfig.json)
+
+### Data Flow
+1. User interacts with UI (e.g., clicks Send)
+2. Component calls service function (e.g., `makeHttpRequest`)
+3. Service serializes request to JSON
+4. IPC call to Electron main process via `window.ababilAPI`
+5. Main process calls Rust library via koffi FFI
+6. Rust executes HTTP request using reqwest
+7. Response flows back through IPC to React component
+8. Component updates state and renders response
+
+### Storage Keys
+- `ababil_requests` - Saved requests array
+- `ababil_collections` - Collections array
+- `ababil_environments` - Environments array
+- `ababil_active_environment` - Active environment ID
+
+### ID Generation
+- Requests: `req_{timestamp}_{random}`
+- Collections: `col_{timestamp}_{random}`
+- Environments: Similar pattern
+
+### Variable Replacement
+- Syntax: `{{variable_name}}`
+- Replaced in: URLs, headers, request body
+- Service: `environmentService.replaceVariables()`
+- Active environment determines which variables are used
+
+### HTTP Request Format
+Requests use Postman-compatible format:
+```typescript
+{
+  method: "GET" | "POST" | ...,
+  url: { raw: "https://..." },
+  header: [{ key: "...", value: "..." }],
+  body: { mode: "raw", raw: "..." },
+  auth: { type: "bearer", bearer: [...] }
+}
+```
+
+### Rust FFI Functions
+- `make_http_request(request_json: *const c_char) -> *mut c_char`
+- `free_string(ptr: *mut c_char)` - Memory cleanup
+- `parse_postman_collection(json: *const c_char) -> *mut c_char`
+- `parse_postman_environment(json: *const c_char) -> *mut c_char`
+
+## Development Workflow
+
+### Building Rust Core
+```bash
+npm run build:rust          # Build for current platform
+npm run build:rust:mac      # Build for macOS (both archs)
+npm run copy:rust:mac       # Copy built library to services/
+```
+
+### Running Development
+```bash
+npm start                   # Start React dev server (port 3000)
+npm run start:dev           # Start Electron with React dev server
+npm run electron:dev        # Start Electron in dev mode
+```
+
+### Building for Production
+```bash
+npm run build               # Build React app
+npm run electron:build      # Build Electron app
+npm run electron:build:mac   # Build macOS distribution
+```
+
+### Native Library Paths
+The app searches for `libababil_core.dylib` in:
+1. `__dirname/services/libababil_core.dylib`
+2. `process.cwd()/services/libababil_core.dylib`
+3. `__dirname/../services/libababil_core.dylib`
+4. `$HOME/Developer/ababil_studio/services/libababil_core.dylib`
+
+## Component Patterns
+
+### Layout Structure
+```
+HomeLayout
+├── TopHeader (environment selector, settings)
+├── LeftNav (collections/environments/settings tabs)
+└── ResizableLayout
+    ├── Sidebar (collections/requests tree)
+    └── MainContent (request builder + response viewer)
+```
+
+### State Management
+- Local state via useState for component-specific data
+- localStorage for persistence (via storage service)
+- No global state management library (Redux/Zustand) - keep it simple
+
+### Component Props Pattern
+- Use TypeScript interfaces for props
+- Destructure props in function signature
+- Pass callbacks for parent-child communication
+- Use optional props with defaults where appropriate
+
+## Important Services
+
+### httpClient.ts
+- `makeHttpRequest(request: HttpRequest): Promise<HttpResponse>`
+- `makeSimpleRequest(method, url, headers?, body?): Promise<HttpResponse>`
+- `isNativeLibraryAvailable(): Promise<boolean>`
+- `getNativeLibraryStatus(): Promise<Status>`
+
+### storage.ts
+- `saveRequest(request): SavedRequest`
+- `loadRequests(): SavedRequest[]`
+- `updateRequest(id, updates): SavedRequest | null`
+- `deleteRequest(id): boolean`
+- `getRequestsByCollection(collectionId?): SavedRequest[]`
+- Similar functions for collections
+
+### environmentService.ts
+- `loadEnvironments(): Environment[]`
+- `saveEnvironment(env): Environment`
+- `getActiveEnvironment(): Environment | null`
+- `setActiveEnvironment(id): void`
+- `replaceVariables(text, environment): string`
+
+## UI Component Library
+
+### shadcn/ui Components Used
+- Button, Input, Textarea, Select
+- Dialog, Tabs, Card, Badge
+- Label, Separator, Table, Tooltip
+
+### Styling
+- Tailwind CSS with custom color scheme
+- CSS variables for theming (dark mode support)
+- Responsive design with Tailwind breakpoints
+- Custom CSS in `src/styles/` for specific layouts
+
+## Error Handling
+
+### HTTP Errors
+- Status code 0 = Error occurred
+- Error message in response.body
+- Check `isSuccessResponse()` or `isErrorResponse()` helpers
+
+### Native Library Errors
+- Check `isNativeLibraryAvailable()` before making requests
+- Handle null responses from FFI calls
+- Log errors to console in main process
+
+### Storage Errors
+- Try-catch around localStorage operations
+- Return empty arrays/objects on parse errors
+- Graceful degradation if storage unavailable
+
+## Testing & Quality
+
+### TypeScript
+- Strict mode enabled
+- No implicit any
+- Path aliases configured (`@/*`)
+- React JSX transform enabled
+
+### Code Style
+- ESLint with react-app config
+- Prettier (if configured)
+- Consistent naming: camelCase for variables, PascalCase for components
+
+## Common Tasks
+
+### Adding a New HTTP Method
+1. Update TypeScript types in `src/types/http.ts`
+2. Update Rust handler in `core/src/lib.rs` (execute_request_from_struct)
+3. Update UI method selector if needed
+
+### Adding a New Collection Field
+1. Update `Collection` interface in `src/types/collection.ts`
+2. Update storage functions in `src/services/storage.ts`
+3. Update UI components that display collections
+
+### Adding Environment Variable Types
+1. Update `EnvironmentVariable` interface in `src/types/environment.ts`
+2. Update variable replacement logic if needed
+3. Update UI for variable editing
+
+## Notes for AI Assistants
+
+- Always check if native library is available before making HTTP requests
+- Use TypeScript types from `src/types/` for consistency
+- Follow existing patterns for state management (local state + localStorage)
+- Rust library must be built and copied to `services/` directory
+- Environment variables use `{{variable}}` syntax
+- Collections support nesting via `collections` array property
+- Requests are linked to collections via `collectionId`
+- Dark mode is detected via `prefers-color-scheme` media query
+- IPC communication uses `window.ababilAPI` (exposed via preload.js)
+- All HTTP requests go through Rust library for performance
+
+Note : If new things update this page for future updates 
