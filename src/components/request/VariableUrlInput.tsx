@@ -1,14 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Input } from '../ui/input';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '../ui/tooltip';
 import { Environment } from '../../types/environment';
 import { getVariableValue } from '../../services/environmentService';
-import { VariableEditDialog } from './VariableEditDialog';
+import { VariableInfoPopup } from './VariableInfoPopup';
 
 interface VariableUrlInputProps {
     value: string;
@@ -36,7 +30,10 @@ export function VariableUrlInput({
     activeEnvironment,
     onEnvironmentUpdate,
 }: VariableUrlInputProps) {
-    const [editingVariable, setEditingVariable] = useState<string | null>(null);
+    const [selectedVariable, setSelectedVariable] = useState<{
+        key: string;
+        position: { top: number; left: number };
+    } | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const [isFocused, setIsFocused] = useState(false);
@@ -59,14 +56,82 @@ export function VariableUrlInput({
         return variables;
     };
 
-    const variables = findVariables(value);
+    const variables = useMemo(() => findVariables(value), [value]);
     const hasVariables = variables.length > 0;
 
-    const handleVariableClick = (variableKey: string, e: React.MouseEvent) => {
+    // Memoize variable values to ensure they update when environment changes
+    // Create a stable key from environment ID, updatedAt, and variables to detect changes
+    const environmentVariablesKey = useMemo(() => {
+        if (!activeEnvironment) return '';
+        const envId = activeEnvironment.id || '';
+        const updatedAt = activeEnvironment.updatedAt || 0;
+        const varsKey = activeEnvironment.variables
+            ? activeEnvironment.variables
+                  .map((v) => `${v.key}:${v.value}:${v.disabled ? '1' : '0'}`)
+                  .join('|')
+            : '';
+        return `${envId}:${updatedAt}:${varsKey}`;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        activeEnvironment?.id,
+        activeEnvironment?.updatedAt,
+        activeEnvironment?.variables,
+    ]);
+
+    const variableValues = useMemo(() => {
+        const values: Record<string, string | null> = {};
+        variables.forEach((variable) => {
+            const value = getVariableValue(variable.key, activeEnvironment);
+            values[variable.key] = value;
+        });
+        return values;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [variables, activeEnvironment?.id, environmentVariablesKey]);
+
+    const handleVariableClick = (
+        variableKey: string,
+        index: number,
+        e: React.MouseEvent
+    ) => {
         e.preventDefault();
         e.stopPropagation();
-        setEditingVariable(variableKey);
+
+        if (!inputRef.current) return;
+
+        const position = variablePositions[index];
+        if (!position) return;
+
+        const inputRect = inputRef.current.getBoundingClientRect();
+        const popupTop = inputRect.bottom + 8; // 8px gap below input
+        const popupLeft = inputRect.left + position.left;
+
+        setSelectedVariable({
+            key: variableKey,
+            position: { top: popupTop, left: popupLeft },
+        });
     };
+
+    // Close popup when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (selectedVariable && inputRef.current) {
+                const target = e.target as HTMLElement;
+                if (
+                    !inputRef.current.contains(target) &&
+                    !target.closest('[data-variable-popup]')
+                ) {
+                    setSelectedVariable(null);
+                }
+            }
+        };
+
+        if (selectedVariable) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }
+    }, [selectedVariable]);
 
     // Calculate positions for variable overlays using a hidden measurement element
     const [variablePositions, setVariablePositions] = useState<
@@ -115,96 +180,119 @@ export function VariableUrlInput({
     }, [value, variables, hasVariables]);
 
     return (
-        <TooltipProvider>
-            <div className="flex-1 relative">
-                <Input
-                    ref={inputRef}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    onKeyDown={onKeyDown}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    placeholder={placeholder}
-                    className={`font-mono text-sm ${className || ''}`}
-                />
+        <div className="flex-1 relative">
+            <Input
+                ref={inputRef}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={onKeyDown}
+                onFocus={() => setIsFocused(true)}
+                onBlur={(e) => {
+                    // Delay blur to allow variable click to register
+                    setTimeout(() => {
+                        const activeElement = document.activeElement;
+                        if (
+                            !activeElement ||
+                            (!activeElement.closest('[data-variable-popup]') &&
+                                !activeElement.closest('.absolute'))
+                        ) {
+                            setIsFocused(false);
+                        }
+                    }, 100);
+                }}
+                placeholder={placeholder}
+                className={`font-mono text-sm ${className || ''}`}
+            />
 
-                {/* Variable overlays */}
-                {hasVariables && isFocused && (
-                    <div
-                        ref={overlayRef}
-                        className="absolute inset-0 pointer-events-none overflow-hidden"
-                        style={{
-                            padding: '0.5rem 0.75rem',
-                            lineHeight: '1.5rem',
-                        }}
-                    >
-                        {variables.map((variable, index) => {
-                            const position = variablePositions[index];
-                            if (!position) return null;
+            {/* Variable overlays */}
+            {hasVariables && (
+                <div
+                    ref={overlayRef}
+                    className="absolute inset-0 pointer-events-none overflow-hidden"
+                    style={{
+                        padding: '0.5rem 0.75rem',
+                        lineHeight: '1.5rem',
+                    }}
+                >
+                    {variables.map((variable, index) => {
+                        const position = variablePositions[index];
+                        if (!position) return null;
 
-                            const variableValue = getVariableValue(
-                                variable.key,
-                                activeEnvironment
-                            );
+                        const variableValue = variableValues[variable.key];
 
-                            return (
-                                <Tooltip key={index}>
-                                    <TooltipTrigger asChild>
-                                        <span
-                                            className="absolute pointer-events-auto cursor-pointer underline decoration-dotted decoration-primary/60 hover:decoration-primary text-primary hover:text-primary/80 transition-colors"
-                                            style={{
-                                                left: `${position.left}px`,
-                                                width: `${position.width}px`,
-                                                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
-                                                fontSize: '0.875rem',
-                                                lineHeight: '1.5rem',
-                                            }}
-                                            onClick={(e) =>
-                                                handleVariableClick(variable.key, e)
-                                            }
-                                            title={`Click to edit ${variable.key}`}
-                                        >
-                                            {variable.match}
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <div className="space-y-1">
-                                            <div className="font-semibold">
-                                                {variable.key}
-                                            </div>
-                                            {variableValue !== null ? (
-                                                <div className="text-xs text-muted-foreground font-mono">
-                                                    {variableValue}
-                                                </div>
-                                            ) : (
-                                                <div className="text-xs text-muted-foreground">
-                                                    Not set
-                                                </div>
-                                            )}
-                                        </div>
-                                    </TooltipContent>
-                                </Tooltip>
-                            );
-                        })}
-                    </div>
-                )}
+                        // Determine if variable exists and has a value
+                        // Check for null, undefined, or empty string (after trimming)
+                        const hasValue =
+                            variableValue != null &&
+                            variableValue.trim() !== '';
 
-                {/* Variable Edit Dialog */}
-                {editingVariable && (
-                    <VariableEditDialog
-                        open={!!editingVariable}
-                        onOpenChange={(open) => {
-                            if (!open) setEditingVariable(null);
-                        }}
+                        // Color classes: green if exists with value, red otherwise
+                        // Use more vibrant colors and normal font weight to match input text
+                        const colorClasses = hasValue
+                            ? 'text-green-600 dark:text-green-400 underline decoration-dotted decoration-green-500/70 hover:decoration-green-500 font-normal'
+                            : 'text-red-600 dark:text-red-400 underline decoration-dotted decoration-red-500/70 hover:decoration-red-500 font-normal';
+
+                        return (
+                            <span
+                                key={index}
+                                className={`absolute ${
+                                    isFocused
+                                        ? 'pointer-events-auto cursor-pointer'
+                                        : 'pointer-events-none'
+                                } ${colorClasses} transition-colors`}
+                                style={{
+                                    left: `${position.left}px`,
+                                    width: `${position.width}px`,
+                                    fontFamily:
+                                        'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+                                    fontSize: '0.875rem',
+                                    lineHeight: '1.5rem',
+                                    fontWeight: 'normal',
+                                }}
+                                onMouseDown={
+                                    isFocused
+                                        ? (e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              handleVariableClick(
+                                                  variable.key,
+                                                  index,
+                                                  e
+                                              );
+                                          }
+                                        : undefined
+                                }
+                                title={
+                                    isFocused
+                                        ? `Click to view ${variable.key}`
+                                        : undefined
+                                }
+                            >
+                                {variable.match}
+                            </span>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Variable Info Popup */}
+            {selectedVariable && (
+                <div data-variable-popup>
+                    <VariableInfoPopup
+                        variableKey={selectedVariable.key}
                         environment={activeEnvironment}
-                        variableKey={editingVariable}
+                        position={selectedVariable.position}
+                        onClose={() => setSelectedVariable(null)}
+                        onEdit={() => {
+                            // Open full edit dialog if needed
+                            setSelectedVariable(null);
+                        }}
                         onVariableUpdated={() => {
                             onEnvironmentUpdate?.();
-                            setEditingVariable(null);
                         }}
                     />
-                )}
-            </div>
-        </TooltipProvider>
+                </div>
+            )}
+        </div>
     );
 }
