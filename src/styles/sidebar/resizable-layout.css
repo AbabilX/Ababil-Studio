@@ -1,0 +1,7 @@
+/* Sidebar Resize Styles */
+
+/* Disable transitions during sidebar resize for smooth dragging */
+.resizing * {
+    transition: none !important;
+}
+
