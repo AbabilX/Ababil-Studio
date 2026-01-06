@@ -289,6 +289,8 @@ export function VariableUrlInput({
                         }}
                         onVariableUpdated={() => {
                             onEnvironmentUpdate?.();
+                            // Close popup after update to show fresh data on next open
+                            setSelectedVariable(null);
                         }}
                     />
                 </div>

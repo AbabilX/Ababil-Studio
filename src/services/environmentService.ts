@@ -93,9 +93,12 @@ export function getActiveEnvironment(): Environment | null {
         // Try to find any active environment
         const environments = loadEnvironments();
         const active = environments.find((e) => e.isActive);
-        return active || null;
+        // Return a new object reference to ensure React detects changes
+        return active ? { ...active, variables: [...active.variables] } : null;
     }
-    return getEnvironment(activeId);
+    const env = getEnvironment(activeId);
+    // Return a new object reference to ensure React detects changes
+    return env ? { ...env, variables: [...env.variables] } : null;
 }
 
 export function setActiveEnvironment(id: string): boolean {

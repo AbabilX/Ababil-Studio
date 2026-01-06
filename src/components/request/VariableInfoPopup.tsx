@@ -22,6 +22,7 @@ export function VariableInfoPopup({
     onEdit,
     onVariableUpdated,
 }: VariableInfoPopupProps) {
+    // Get fresh variable value - recalculate on every render to get latest value
     const variableValue = getVariableValue(variableKey, environment);
     const hasValue = variableValue !== null && variableValue.trim() !== '';
     const [isEditing, setIsEditing] = useState(false);
@@ -32,7 +33,7 @@ export function VariableInfoPopup({
         if (!isEditing) {
             setEditValue(variableValue || '');
         }
-    }, [variableValue, isEditing]);
+    }, [variableValue, isEditing, environment?.updatedAt]);
 
     const handleEdit = () => {
         if (onEdit) {
@@ -46,13 +47,19 @@ export function VariableInfoPopup({
     const handleSave = () => {
         if (!environment) return;
         // Import updateVariable here to avoid circular dependency
-        import('../../services/environmentService').then(({ updateVariable }) => {
-            const success = updateVariable(environment.id, variableKey, editValue);
-            if (success) {
-                onVariableUpdated?.();
-                setIsEditing(false);
+        import('../../services/environmentService').then(
+            ({ updateVariable }) => {
+                const success = updateVariable(
+                    environment.id,
+                    variableKey,
+                    editValue
+                );
+                if (success) {
+                    onVariableUpdated?.();
+                    setIsEditing(false);
+                }
             }
-        });
+        );
     };
 
     return (
@@ -127,7 +134,9 @@ export function VariableInfoPopup({
                                 <div className="flex items-center gap-2">
                                     <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
                                         <span className="text-white text-xs font-bold">
-                                            {environment.name.charAt(0).toUpperCase()}
+                                            {environment.name
+                                                .charAt(0)
+                                                .toUpperCase()}
                                         </span>
                                     </div>
                                     <span className="text-xs text-muted-foreground">
@@ -159,4 +168,3 @@ export function VariableInfoPopup({
         </div>
     );
 }
-

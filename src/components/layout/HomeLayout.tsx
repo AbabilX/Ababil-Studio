@@ -69,7 +69,14 @@ export function HomeLayout() {
     const refreshEnvironments = () => {
         const envs = loadEnvironments();
         setEnvironments(envs);
-        setActiveEnvironmentState(getActiveEnvironment());
+        // Get fresh environment to ensure React detects the change
+        const activeEnv = getActiveEnvironment();
+        // Force update by creating a new object reference
+        if (activeEnv) {
+            setActiveEnvironmentState({ ...activeEnv });
+        } else {
+            setActiveEnvironmentState(null);
+        }
     };
 
     const handleEnvironmentChange = (environmentId: string) => {
