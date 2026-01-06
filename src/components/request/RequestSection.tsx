@@ -18,17 +18,21 @@ import {
     DialogHeader,
     DialogTitle,
 } from '../ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { Loading01Icon, MailSend01Icon, SaveEnergy01Icon } from 'hugeicons-react';
 import { HTTP_METHODS } from '../../utils/constants';
 import { getMethodColor } from '../../utils/helpers';
 import { Collection } from '../../types/collection';
 import { Environment } from '../../types/environment';
+import { RequestHeader } from '../../types/http';
 import { VariableUrlInput } from './VariableUrlInput';
+import { HeadersTable } from './HeadersTable';
 
 interface RequestSectionProps {
     method: string;
     url: string;
     requestBody: string;
+    headers: RequestHeader[];
     loading: boolean;
     currentRequestName?: string;
     collections: Collection[];
@@ -36,6 +40,7 @@ interface RequestSectionProps {
     onMethodChange: (method: string) => void;
     onUrlChange: (url: string) => void;
     onBodyChange: (body: string) => void;
+    onHeadersChange: (headers: RequestHeader[]) => void;
     onSend: () => void;
     onKeyDown: (e: React.KeyboardEvent) => void;
     onSave?: (name: string, collectionId?: string) => void;
@@ -46,6 +51,7 @@ export function RequestSection({
     method,
     url,
     requestBody,
+    headers,
     loading,
     currentRequestName,
     collections,
@@ -53,6 +59,7 @@ export function RequestSection({
     onMethodChange,
     onUrlChange,
     onBodyChange,
+    onHeadersChange,
     onSend,
     onKeyDown,
     onSave,
@@ -143,21 +150,34 @@ export function RequestSection({
                     </Button>
                 </div>
 
-                {/* Request Body */}
-                {['POST', 'PUT', 'PATCH'].includes(method) && (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                            Request Body (JSON)
-                        </label>
-                        <Textarea
-                            value={requestBody}
-                            onChange={(e) => onBodyChange(e.target.value)}
-                            placeholder='{"key": "value"}'
-                            rows={4}
-                            className="font-mono text-sm resize-none"
-                        />
-                    </div>
-                )}
+                {/* Headers and Body Tabs */}
+                <Tabs defaultValue="headers" className="w-full">
+                    <TabsList className={['POST', 'PUT', 'PATCH'].includes(method) ? 'grid w-full grid-cols-2' : 'grid w-full grid-cols-1'}>
+                        <TabsTrigger value="headers">Headers</TabsTrigger>
+                        {['POST', 'PUT', 'PATCH'].includes(method) && (
+                            <TabsTrigger value="body">Body</TabsTrigger>
+                        )}
+                    </TabsList>
+                    <TabsContent value="headers" className="mt-4">
+                        <HeadersTable headers={headers} onChange={onHeadersChange} />
+                    </TabsContent>
+                    {['POST', 'PUT', 'PATCH'].includes(method) && (
+                        <TabsContent value="body" className="mt-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                    Request Body (JSON)
+                                </label>
+                                <Textarea
+                                    value={requestBody}
+                                    onChange={(e) => onBodyChange(e.target.value)}
+                                    placeholder='{"key": "value"}'
+                                    rows={8}
+                                    className="font-mono text-sm resize-none"
+                                />
+                            </div>
+                        </TabsContent>
+                    )}
+                </Tabs>
             </CardContent>
         </Card>
 

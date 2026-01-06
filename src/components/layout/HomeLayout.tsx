@@ -6,6 +6,7 @@ import {
     Collection,
     httpRequestToSavedRequest,
 } from '../../types/collection';
+import { RequestHeader } from '../../types/http';
 import { Environment } from '../../types/environment';
 import {
     saveRequest,
@@ -43,6 +44,7 @@ export function HomeLayout() {
         'http://localhost:6000/cloths?page=1&limit=20'
     );
     const [requestBody, setRequestBody] = useState('');
+    const [headers, setHeaders] = useState<RequestHeader[]>([]);
     const [response, setResponse] = useState<HttpResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [collections, setCollections] = useState<Collection[]>([]);
@@ -103,12 +105,23 @@ export function HomeLayout() {
                 requestBody,
                 activeEnvironment
             );
-            const headers: Record<string, string> = {};
+            // Convert headers array to Record, filtering out disabled and empty headers
+            const headersRecord: Record<string, string> = {};
+            headers
+                .filter((h) => !h.disabled && h.key.trim())
+                .forEach((h) => {
+                    headersRecord[h.key] = h.value;
+                });
+
+            // Add Content-Type header for POST/PUT/PATCH if body exists
             if (resolvedBody && ['POST', 'PUT', 'PATCH'].includes(method)) {
-                headers['Content-Type'] = 'application/json';
+                if (!headersRecord['Content-Type']) {
+                    headersRecord['Content-Type'] = 'application/json';
+                }
             }
+
             const resolvedHeaders = replaceVariablesInHeaders(
-                headers,
+                headersRecord,
                 activeEnvironment
             );
 
@@ -145,14 +158,34 @@ export function HomeLayout() {
         setMethod(request.method);
         setUrl(request.url);
         setRequestBody(request.body || '');
+        // Convert headers from Record to RequestHeader array
+        if (request.headers) {
+            setHeaders(
+                Object.entries(request.headers).map(([key, value]) => ({
+                    key,
+                    value,
+                    disabled: false,
+                }))
+            );
+        } else {
+            setHeaders([]);
+        }
         setResponse(null);
     };
 
     const handleSave = (name: string, collectionId?: string) => {
+        // Convert headers array to Record for saving
+        const headersRecord: Record<string, string> = {};
+        headers
+            .filter((h) => !h.disabled && h.key.trim())
+            .forEach((h) => {
+                headersRecord[h.key] = h.value;
+            });
+
         const request = createSimpleRequest(
             method,
             url,
-            {},
+            headersRecord,
             requestBody || undefined
         );
         const savedRequestData = httpRequestToSavedRequest(
@@ -172,6 +205,7 @@ export function HomeLayout() {
         setMethod('GET');
         setUrl('');
         setRequestBody('');
+        setHeaders([]);
         setResponse(null);
     };
 
@@ -215,6 +249,7 @@ export function HomeLayout() {
                         method={method}
                         url={url}
                         requestBody={requestBody}
+                        headers={headers}
                         loading={loading}
                         currentRequestName={currentRequestName}
                         collections={collections}
@@ -222,6 +257,7 @@ export function HomeLayout() {
                         onMethodChange={setMethod}
                         onUrlChange={setUrl}
                         onBodyChange={setRequestBody}
+                        onHeadersChange={setHeaders}
                         onSend={handleSend}
                         onKeyDown={handleKeyDown}
                         onSave={handleSave}
