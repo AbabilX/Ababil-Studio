@@ -52,6 +52,7 @@ interface PostmanCollection {
 interface ConversionResult {
     collections: Collection[];
     requests: SavedRequest[];
+    environment?: import('../types/environment').Environment;
 }
 
 /**
@@ -246,12 +247,35 @@ export async function importPostmanCollection(
     // Get updated parent collection
     const updatedParent = getCollection(parentCollection.id);
 
+    // Import collection-level variables as an environment if they exist
+    let importedEnvironment: import('../types/environment').Environment | undefined;
+    if (postmanCollection.variable && postmanCollection.variable.length > 0) {
+        const { saveEnvironment } = await import('./environmentService');
+        const collectionName = postmanCollection.info.name || 'Imported Collection';
+        
+        const variables = postmanCollection.variable.map((v: any) => ({
+            key: v.key || '',
+            value: v.value || '',
+            type: (v.type as 'string' | 'number' | 'boolean') || 'string',
+            disabled: v.disabled === true,
+        })).filter((v: any) => v.key); // Filter out variables without keys
+
+        if (variables.length > 0) {
+            importedEnvironment = saveEnvironment({
+                name: `${collectionName} - Variables`,
+                variables,
+                isActive: false,
+            });
+        }
+    }
+
     // Return only the parent collection
     // Nested collections are already linked via parent's collections array
     // The Sidebar component will handle the nested structure correctly
     return {
         collections: updatedParent ? [updatedParent] : [],
         requests: result.requests,
+        environment: importedEnvironment,
     };
 }
 

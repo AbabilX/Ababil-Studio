@@ -189,7 +189,10 @@ export function HomeLayout() {
             onNewCollection={refreshData}
             onNewRequest={handleNewRequest}
             onCollectionCreated={refreshData}
-            onImportComplete={refreshData}
+            onImportComplete={() => {
+                refreshData();
+                refreshEnvironments();
+            }}
         />
     );
 

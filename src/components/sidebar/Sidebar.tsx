@@ -154,7 +154,13 @@ export function Sidebar({
                 setExpandedCollections((prev) => new Set(prev).add(col.id));
             });
 
-            // Refresh parent
+            // Show success message if environment was imported
+            if (result.environment) {
+                // Environment is automatically saved, just refresh
+                console.log(`Environment "${result.environment.name}" imported successfully`);
+            }
+
+            // Refresh parent (this will also refresh environments)
             onImportComplete?.();
             setImporting(false);
         } catch (error: unknown) {
