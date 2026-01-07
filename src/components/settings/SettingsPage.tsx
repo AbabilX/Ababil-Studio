@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SettingsSidebar, SettingsSection } from './SettingsSidebar';
 import { ThemesSection } from './ThemesSection';
+import { GeneralSection } from './GeneralSection';
 
 export function SettingsPage() {
     const [activeSection, setActiveSection] =
@@ -11,6 +12,7 @@ export function SettingsPage() {
             case 'themes':
                 return <ThemesSection />;
             case 'general':
+                return <GeneralSection />;
             case 'shortcuts':
             case 'ai':
             case 'data':

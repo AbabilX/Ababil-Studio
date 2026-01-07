@@ -263,6 +263,7 @@ async function createWindow() {
 
     const mainWindow = new BrowserWindow({
         title: 'Ababil Studio',
+        icon: path.join(__dirname, 'public/appicon.png'),
         width: 1280,
         height: 800,
         webPreferences: {
