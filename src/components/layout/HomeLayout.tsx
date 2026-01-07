@@ -55,6 +55,7 @@ export function HomeLayout() {
     const [environments, setEnvironments] = useState<Environment[]>([]);
     const [activeEnvironment, setActiveEnvironmentState] =
         useState<Environment | null>(null);
+    // Auth tokens are in-memory only (cleared on app restart like Postman)
     const [authTokens, setAuthTokens] = useState<AuthToken[]>([]);
     const [requestAuth, setRequestAuth] = useState<RequestAuth | undefined>();
     const [activeRequestId, setActiveRequestId] = useState<

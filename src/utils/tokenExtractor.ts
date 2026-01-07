@@ -44,7 +44,9 @@ function findTokenFields(
         if (
             typeof value === 'string' &&
             value.length > 0 &&
-            TOKEN_FIELD_NAMES.some((tokenName) => lowerKey.includes(tokenName.toLowerCase()))
+            TOKEN_FIELD_NAMES.some((tokenName) =>
+                lowerKey.includes(tokenName.toLowerCase())
+            )
         ) {
             results.push({
                 name: key,
@@ -74,8 +76,17 @@ function findTokenFields(
  */
 export function extractTokensFromResponse(
     response: HttpResponse
-): Array<{ name: string; value: string; path: string; suggestedTokenName: string }> {
-    if (!response.body || response.status_code < 200 || response.status_code >= 300) {
+): Array<{
+    name: string;
+    value: string;
+    path: string;
+    suggestedTokenName: string;
+}> {
+    if (
+        !response.body ||
+        response.status_code < 200 ||
+        response.status_code >= 300
+    ) {
         return [];
     }
 
@@ -85,18 +96,32 @@ export function extractTokensFromResponse(
 
         return tokenFields.map((field) => {
             const lowerName = field.name.toLowerCase();
-            // Use the field name directly if it's a common token name, otherwise normalize it
-            const commonNames = ['token', 'access_token', 'accesstoken', 'authtoken', 'bearertoken', 'bearer_token', 'apitoken', 'api_token'];
-            let suggestedName = lowerName;
-            
-            // If it's already a common name, use it as-is
-            if (commonNames.includes(lowerName)) {
-                suggestedName = lowerName;
+            let suggestedName: string;
+
+            // Map common token field names to Postman-style variable names
+            // This ensures extracted tokens match what's used in collection auth
+            if (
+                lowerName === 'accesstoken' ||
+                lowerName === 'access_token' ||
+                lowerName === 'token' ||
+                lowerName === 'authtoken'
+            ) {
+                suggestedName = 'user_token'; // Match {{user_token}} in Postman
+            } else if (
+                lowerName === 'refreshtoken' ||
+                lowerName === 'refresh_token'
+            ) {
+                suggestedName = 'refresh_token'; // Match {{refresh_token}} in Postman
+            } else if (
+                lowerName.includes('token') ||
+                lowerName.includes('key')
+            ) {
+                // Keep original name for other tokens, just normalize
+                suggestedName = lowerName.replace(/[^a-z0-9]/g, '_');
             } else {
-                // Normalize: remove special chars, convert to lowercase
                 suggestedName = lowerName.replace(/[^a-z0-9]/g, '_');
             }
-            
+
             return {
                 ...field,
                 suggestedTokenName: suggestedName,
@@ -112,7 +137,12 @@ export function extractTokensFromResponse(
  * Convert extracted token fields to AuthToken objects (without IDs)
  */
 export function extractedTokensToAuthTokens(
-    extracted: Array<{ name: string; value: string; path: string; suggestedTokenName: string }>
+    extracted: Array<{
+        name: string;
+        value: string;
+        path: string;
+        suggestedTokenName: string;
+    }>
 ): Array<Omit<AuthToken, 'id' | 'createdAt' | 'updatedAt'>> {
     return extracted.map((token) => ({
         name: token.suggestedTokenName,
@@ -120,4 +150,3 @@ export function extractedTokensToAuthTokens(
         source: 'extracted' as const,
     }));
 }
-

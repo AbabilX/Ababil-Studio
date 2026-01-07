@@ -1,0 +1,1494 @@
+{
+  "info": {
+    "_postman_id": "vintage-world-complete-user-api-v2",
+    "name": "Vintage World - Complete User API E2E",
+    "description": "Complete end-to-end API collection for Vintage World users. Includes all authentication, products, orders, cart, profile, email preferences, login activity tracking, and search functionality.\n\n**Base URLs:**\n- Production (Vercel): https://vinatageworld.vercel.app\n- Live API (VPS): https://vwapi.imurad.me\n\n**🚀 Performance & Caching:**\n- All endpoints are cached with Redis for optimal performance\n- First request: ~0.5-2s (cache miss, fetches from database)\n- Subsequent requests: ~0.001-0.002s (cache hit, served from Redis)\n- Check response headers: `X-Cache: HIT` (cached) or `X-Cache: MISS` (from DB)\n- Cache TTL: 2-10 minutes depending on endpoint\n\n**Response Headers:**\n- `X-Cache`: HIT (cached) or MISS (from database)\n- `X-Cache-Source`: REDIS (from Redis) or DB (from database)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "vintage-world-v2"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{user_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://vwapi.imurad.me",
+      "type": "string",
+      "description": "Live API with Redis caching (recommended). Alternative: https://vinatageworld.vercel.app"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_email",
+      "value": "test@example.com",
+      "type": "string"
+    },
+    {
+      "key": "user_password",
+      "value": "password123",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "VW12345678",
+      "type": "string"
+    },
+    {
+      "key": "global_product_id",
+      "value": "019a6842-7c21-7c08-1585-69e8500d628b",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 1. Authentication",
+      "description": "Complete authentication flow with email notifications for new device logins",
+      "item": [
+        {
+          "name": "1.1 Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\",\n  \"username\": \"johndoe\",\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register new user. Returns OTP for email verification."
+          }
+        },
+        {
+          "name": "1.2 Verify Email (OTP)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-email",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-email"]
+            },
+            "description": "Verify email with 6-digit OTP received in email"
+          }
+        },
+        {
+          "name": "1.3 Resend Verification OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/resend-verification-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "resend-verification-otp"]
+            },
+            "description": "Resend email verification OTP if not received"
+          }
+        },
+        {
+          "name": "1.4 Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"user_token\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"refresh_token\", jsonData.refreshToken);",
+                  "    console.log(\"Tokens saved to variables\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\",\n  \"deviceInfo\": \"Mobile App - iOS 17\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "**UPDATED**: Login with device tracking. Returns accessToken and refreshToken. **Note**: Bulky fields like cart, wishlist, and addresses are now EXCLUDED from the user object to optimize response size."
+          }
+        },
+        {
+          "name": "1.5 Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh-token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh-token"]
+            },
+            "description": "Refresh access token using refresh token when it expires"
+          }
+        },
+        {
+          "name": "1.6 Verify Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{user_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-token"]
+            },
+            "description": "Verify if token is valid and get user data"
+          }
+        },
+        {
+          "name": "1.7 Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout user and delete refresh token from database. Protected route."
+          }
+        },
+        {
+          "name": "1.8 Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "forgot-password"]
+            },
+            "description": "Request password reset OTP (sent to email, valid for 15 minutes)"
+          }
+        },
+        {
+          "name": "1.9 Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reset-password"]
+            },
+            "description": "Reset password using OTP. All sessions logged out, confirmation email sent."
+          }
+        },
+        {
+          "name": "1.10 Google Login/Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"user_token\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"refresh_token\", jsonData.refreshToken);",
+                  "    console.log(\"Google auth tokens saved to variables\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"googleId\": \"google-unique-id-123\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"John Doe\",\n  \"photoUrl\": \"https://lh3.googleusercontent.com/photo.jpg\",\n  \"deviceInfo\": \"Mobile App - iOS 17\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/google",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "**NEW**: Google OAuth Login/Signup. Frontend sends Google user info, backend handles both: creates account for new users or logs in existing users. Returns isNewUser flag to indicate if account was just created."
+          }
+        },
+        {
+          "name": "1.11 Google Login via ID Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"user_token\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"refresh_token\", jsonData.refreshToken);",
+                  "    console.log(\"Google service auth tokens saved to variables\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"YOUR_GOOGLE_ID_TOKEN_HERE\",\n  \"deviceInfo\": \"Mobile App - iOS 17\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/service/google",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "service", "google"]
+            },
+            "description": "**NEW**: Google OAuth Login/Signup via ID Token. Frontend sends the raw Google ID Token (JWT), backend decodes it to extract user info (email, name, picture, googleId). Creates account for new users or logs in existing users. Returns same response format as regular login. Phone is set to null for new Google users."
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 2. User Profile & Settings",
+      "description": "User profile management, addresses, email preferences, category rankings, and login activity tracking",
+      "item": [
+        {
+          "name": "👤 Profile",
+          "item": [
+            {
+              "name": "Get User Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/profile",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "profile"]
+                },
+                "description": "Get current user's profile data. **Note**: Bulky fields like cart, wishlist, and addresses are now EXCLUDED. Use dedicated address/cart endpoints to fetch that data. Protected route."
+              }
+            },
+            {
+              "name": "Get User by Email",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/user/{{user_email}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "user", "{{user_email}}"]
+                },
+                "description": "Get user details by email. Can only access own data."
+              }
+            },
+            {
+              "name": "Update User Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Updated\",\n  \"phone\": \"+1234567890\",\n  \"photourl\": \"https://example.com/photo.jpg\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/profile",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "profile"]
+                },
+                "description": "Update user profile information (Name, Phone, and Photo). Combined update enabled."
+              }
+            },
+            {
+              "name": "Update Profile Photo",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"https://example.com/photo.jpg\",\n  \"fileKey\": \"profile/1234567890-abc123.jpg\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/profile/photo",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "profile", "photo"]
+                },
+                "description": "**NEW**: Update profile photo with R2 integration. Accepts {url, fileKey} from presigned URL upload. Automatically deletes old photo from R2 before updating."
+              }
+            },
+            {
+              "name": "Get Profile Photo Presigned URL",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"filename\": \"profile-photo.jpg\",\n  \"contentType\": \"image/jpeg\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/profile/photo/presigned-url",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "profile", "photo", "presigned-url"]
+                },
+                "description": "**NEW**: Generate presigned URL for profile photo upload. Only requires filename (contentType is optional - auto-detected from extension). Folder is automatically set to 'profile'. Validates image file types (jpg, jpeg, png, gif, webp, svg). Returns uploadUrl, fileKey, and publicUrl."
+              }
+            }
+          ]
+        },
+        {
+          "name": "📍 Addresses",
+          "item": [
+            {
+              "name": "Get Shipping Addresses",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/shipping-address/all",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "shipping-address", "all"]
+                },
+                "description": "Get all saved shipping addresses"
+              }
+            },
+            {
+              "name": "Add Shipping Address",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Home\",\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\",\n  \"street\": \"123 Main St\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"zipCode\": \"10001\",\n  \"country\": \"USA\",\n  \"isDefault\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/shipping-address/add",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "shipping-address", "add"]
+                },
+                "description": "Add new shipping address."
+              }
+            },
+            {
+              "name": "Update Shipping Address",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"street\": \"456 Work Ave\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"zipCode\": \"10001\",\n  \"country\": \"USA\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/shipping-address/update/:uuid",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "shipping-address", "update", ":uuid"],
+                  "variable": [
+                    { "key": "uuid", "value": "{{shipping_address_id}}" }
+                  ]
+                },
+                "description": "Update existing shipping address."
+              }
+            },
+            {
+              "name": "Delete Shipping Address",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/shipping-address/delete/:uuid",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "shipping-address", "delete", ":uuid"],
+                  "variable": [
+                    { "key": "uuid", "value": "{{shipping_address_id}}" }
+                  ]
+                },
+                "description": "Delete a shipping address by ID"
+              }
+            },
+            {
+              "name": "Get Billing Addresses",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/profile/billing-addresses",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "profile", "billing-addresses"]
+                },
+                "description": "Get all saved billing addresses"
+              }
+            },
+            {
+              "name": "Add Billing Address",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"address\": {\n    \"title\": \"Work\",\n    \"fullName\": \"John Doe\",\n    \"phone\": \"+1234567890\",\n    \"street\": \"789 Business Blvd\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"zipCode\": \"10001\",\n    \"country\": \"USA\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/profile/billing-addresses",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "profile", "billing-addresses"]
+                },
+                "description": "Add new billing address. The 'title' field (e.g., Home, Office, Work) is required."
+              }
+            }
+          ]
+        },
+        {
+          "name": "⚙️ Preferences",
+          "item": [
+            {
+              "name": "Get Email Preferences",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/email-preferences",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "email-preferences"]
+                },
+                "description": "**NEW**: Get user's email notification preferences (loginNotifications, orderNotifications)"
+              }
+            },
+            {
+              "name": "Update Email Preferences",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"loginNotifications\": true,\n  \"orderNotifications\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/email-preferences",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "email-preferences"]
+                },
+                "description": "**NEW**: Update email notification preferences. Control which emails you receive."
+              }
+            },
+            {
+              "name": "Update Category Ranking",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"categoryId\": 2143,\n  \"value\": 5\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/update-ranking",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "update-ranking"]
+                },
+                "description": "Update user's category preference ranking"
+              }
+            },
+            {
+              "name": "Get My Category Rankings",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/my-rankings",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "my-rankings"]
+                },
+                "description": "Get user's category rankings"
+              }
+            },
+            {
+              "name": "Get Top Categories",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/top-categories?limit=5",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "top-categories"],
+                  "query": [{ "key": "limit", "value": "5" }]
+                },
+                "description": "Get user's top categories by ranking"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🛡️ Security & Activity",
+          "item": [
+            {
+              "name": "Get Login Activity History",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/user/login-activity?limit=10",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "login-activity"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "Number of activities to return"
+                    }
+                  ]
+                },
+                "description": "**NEW**: Get login activity history with device info, IP address, and timestamps"
+              }
+            },
+            {
+              "name": "Change Password",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+                },
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"{{user_password}}\",\n  \"newPassword\": \"newpassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/user/change-password",
+                  "host": ["{{base_url}}"],
+                  "path": ["user", "change-password"]
+                },
+                "description": "Change password while logged in. Requires current password."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "� 3. Upload (R2 Storage)",
+      "description": "Cloudflare R2 storage upload and delete operations. Use presigned URLs for direct browser uploads.",
+      "item": [
+        {
+          "name": "3.1 Get Presigned Upload URL",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"profile-photo.jpg\",\n  \"contentType\": \"image/jpeg\",\n  \"folder\": \"profile\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/utils/upload/presigned-url",
+              "host": ["{{base_url}}"],
+              "path": ["utils", "upload", "presigned-url"]
+            },
+            "description": "Get a presigned URL for uploading an image to R2. Returns uploadUrl (for PUT request), fileKey (for reference), and publicUrl (for display). URL expires in 10 minutes."
+          }
+        },
+        {
+          "name": "3.2 Get Batch Presigned URLs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"files\": [\n    { \"filename\": \"photo1.jpg\", \"contentType\": \"image/jpeg\", \"folder\": \"products\" },\n    { \"filename\": \"photo2.png\", \"contentType\": \"image/png\", \"folder\": \"products\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/utils/upload/presigned-urls/batch",
+              "host": ["{{base_url}}"],
+              "path": ["utils", "upload", "presigned-urls", "batch"]
+            },
+            "description": "Get multiple presigned URLs for batch upload. Maximum 10 files per request."
+          }
+        }
+      ]
+    },
+    {
+      "name": "�🛒 4. Shopping Cart",
+      "description": "Cart management with real-time product tracking",
+      "item": [
+        {
+          "name": "3.1 Add Item to Cart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"globalId\": \"{{global_product_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/cart/add",
+              "host": ["{{base_url}}"],
+              "path": ["user", "cart", "add"]
+            },
+            "description": "Add product to cart by globalId. Quantity defaults to 1."
+          }
+        },
+        {
+          "name": "3.2 Get Cart Items",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/cart",
+              "host": ["{{base_url}}"],
+              "path": ["user", "cart"]
+            },
+            "description": "Get all cart items with full product details. **Cached with Redis** - First request ~3s, subsequent requests ~0.002s. Cache invalidates automatically when cart changes. Check `X-Cache` header."
+          }
+        },
+        {
+          "name": "3.3 Remove Item from Cart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/cart/remove/{{global_product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["user", "cart", "remove", "{{global_product_id}}"]
+            },
+            "description": "Remove product from cart by globalId"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 5. Orders",
+      "description": "Complete order lifecycle with email notifications",
+      "item": [
+        {
+          "name": "4.1 Create Order",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"globalProductId\": \"{{global_product_id}}\",\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddressId\": \"{{shipping_address_id}}\",\n  \"paymentMethod\": \"COD\",\n  \"notes\": \"Please deliver before 5 PM\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/create-order",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "create-order"]
+            },
+            "description": "**NEW**: Create order with email notification. Sends professional order confirmation email with all details, items, pricing, and tracking info."
+          }
+        },
+        {
+          "name": "4.2 Get User Orders",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/user/{{user_id}}?page=1&limit=10&status=all",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "user", "{{user_id}}"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                {
+                  "key": "status",
+                  "value": "all",
+                  "description": "all, pending, confirmed, processing, shipped, delivered, cancelled"
+                }
+              ]
+            },
+            "description": "Get all orders for a specific user with pagination and filters"
+          }
+        },
+        {
+          "name": "4.3 Get Order Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}"]
+            },
+            "description": "Get detailed information about a specific order by orderId"
+          }
+        },
+        {
+          "name": "4.4 Cancel Order",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_token}}" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Changed my mind\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/cancel/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "cancel", "{{order_id}}"]
+            },
+            "description": "**UPDATED**: Cancel order with professional email notification. Sends cancellation confirmation with refund timeline."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏠 6. Home & Discovery",
+      "description": "Home page content, hero cards, and personalized recommendations",
+      "item": [
+        {
+          "name": "5.1 Get Hero Cards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/hero-cards",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "hero-cards"]
+            },
+            "description": "Get 6 active hero cards for home page banner. **Cached with Redis** - First request ~0.7s, subsequent requests ~0.001s. Check `X-Cache` header."
+          }
+        },
+        {
+          "name": "5.2 Get Top Picks For You",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/toppicksforyou?limit=20&category=all&sort=newest",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "toppicksforyou"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "category", "value": "all" },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest, oldest, price_low, price_high, rating, popular, random"
+                }
+              ]
+            },
+            "description": "Get personalized product recommendations. **Cached with Redis** - First request ~4-6s, subsequent requests ~0.001s. Check `X-Cache` header."
+          }
+        },
+        {
+          "name": "5.3 Get Top Picks (Personalized)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/toppicksforyou/{{user_email}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "toppicksforyou", "{{user_email}}"]
+            },
+            "description": "Get personalized recommendations based on user behavior"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📂 7. Categories",
+      "description": "Browse products by category",
+      "item": [
+        {
+          "name": "6.1 Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/categories",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "categories"]
+            },
+            "description": "Get all active categories"
+          }
+        },
+        {
+          "name": "6.2 Get Categories (For User)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/categories/{{user_email}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "categories", "{{user_email}}"]
+            },
+            "description": "Get personalized categories for user"
+          }
+        },
+        {
+          "name": "6.3 Get Products by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/category-products/2143?page=1&limit=20&sort=newest",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "category-products", "2143"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "sort", "value": "newest" }
+              ]
+            },
+            "description": "Get products by category ID with pagination"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 8. Search",
+      "description": "Product search and suggestions",
+      "item": [
+        {
+          "name": "7.1 Global Search",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"milk\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "search"]
+            },
+            "description": "Search products across all categories (max 40 results)"
+          }
+        },
+        {
+          "name": "7.2 Search Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/search/suggestions?q=sh&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "search", "suggestions"],
+              "query": [
+                { "key": "q", "value": "sh" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Get search suggestions as user types"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛍️ 9. Products",
+      "description": "Product browsing and details",
+      "item": [
+        {
+          "name": "8.1 Get Product by Global ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/products/{{global_product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "products", "{{global_product_id}}"]
+            },
+            "description": "Get product details by global UUID (works across all categories). **Cached with Redis** - First request ~2s, subsequent requests ~0.001s. Check `X-Cache` header."
+          }
+        },
+        {
+          "name": "8.2 Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/allProducts?page=1&limit=20&sort=newest&category=all",
+              "host": ["{{base_url}}"],
+              "path": ["allProducts"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "sort", "value": "newest" },
+                { "key": "category", "value": "all" }
+              ]
+            },
+            "description": "Get all products with pagination and filters. **Cached with Redis** - First request ~2-4s, subsequent requests ~0.001s. Check `X-Cache` header for cache status."
+          }
+        },
+        {
+          "name": "8.3 Get Product Counts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countallProducts",
+              "host": ["{{base_url}}"],
+              "path": ["countallProducts"]
+            },
+            "description": "Get count of products by category"
+          }
+        },
+        {
+          "name": "8.4 Cloths",
+          "item": [
+            {
+              "name": "Get All Cloths",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/cloths?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["cloths"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Latest Cloths",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/cloths/latestcloths",
+                  "host": ["{{base_url}}"],
+                  "path": ["cloths", "latestcloths"]
+                }
+              }
+            },
+            {
+              "name": "Get Cloth by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/cloths/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["cloths", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Cloths by Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/cloths/category/2143",
+                  "host": ["{{base_url}}"],
+                  "path": ["cloths", "category", "2143"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.5 Food",
+          "item": [
+            {
+              "name": "Get All Food",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/food?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["food"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Latest Food",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/food/latestfood",
+                  "host": ["{{base_url}}"],
+                  "path": ["food", "latestfood"]
+                }
+              }
+            },
+            {
+              "name": "Get Food by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/food/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["food", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Food by Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/food/category/2143",
+                  "host": ["{{base_url}}"],
+                  "path": ["food", "category", "2143"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.6 Shoes",
+          "item": [
+            {
+              "name": "Get All Shoes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/shoes?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["shoes"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Latest Shoes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/shoes/latest",
+                  "host": ["{{base_url}}"],
+                  "path": ["shoes", "latest"]
+                }
+              }
+            },
+            {
+              "name": "Get Shoe by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/shoes/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["shoes", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Shoes by Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/shoes/category/2143",
+                  "host": ["{{base_url}}"],
+                  "path": ["shoes", "category", "2143"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.7 Groceries",
+          "item": [
+            {
+              "name": "Get All Groceries",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/groceries?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["groceries"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Latest Groceries",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/groceries/latest",
+                  "host": ["{{base_url}}"],
+                  "path": ["groceries", "latest"]
+                }
+              }
+            },
+            {
+              "name": "Get Grocery by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/groceries/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["groceries", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Groceries by Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/groceries/category/2143",
+                  "host": ["{{base_url}}"],
+                  "path": ["groceries", "category", "2143"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.8 Masala",
+          "item": [
+            {
+              "name": "Get All Masala",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/masala?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["masala"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Latest Masala",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/masala/latest",
+                  "host": ["{{base_url}}"],
+                  "path": ["masala", "latest"]
+                }
+              }
+            },
+            {
+              "name": "Get Masala by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/masala/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["masala", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Masala by Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/masala/category/2143",
+                  "host": ["{{base_url}}"],
+                  "path": ["masala", "category", "2143"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.9 Medicine",
+          "item": [
+            {
+              "name": "Get All Medicine",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/medicine?page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["medicine"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Latest Medicine",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/medicine/latest",
+                  "host": ["{{base_url}}"],
+                  "path": ["medicine", "latest"]
+                }
+              }
+            },
+            {
+              "name": "Get Medicine by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/medicine/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["medicine", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Medicine by Category",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/medicine/category/2143",
+                  "host": ["{{base_url}}"],
+                  "path": ["medicine", "category", "2143"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "⚙️ 9. Utils & Admin",
+      "description": "Utility endpoints and admin functions",
+      "item": [
+        {
+          "name": "9.1 Check Username Availability",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/utils/check-username",
+              "host": ["{{base_url}}"],
+              "path": ["utils", "check-username"]
+            },
+            "description": "Check if username is available"
+          }
+        },
+        {
+          "name": "9.2 Trigger Abandoned Cart Check",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/utils/trigger-abandoned-cart-check",
+              "host": ["{{base_url}}"],
+              "path": ["utils", "trigger-abandoned-cart-check"]
+            },
+            "description": "**NEW**: Manually trigger abandoned cart email check (for testing or manual execution)"
+          }
+        },
+        {
+          "name": "9.3 Check App Update",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/utils/update-check",
+              "host": ["{{base_url}}"],
+              "path": ["utils", "update-check"]
+            },
+            "description": "Check for app updates. Returns latest version, emergency update flag, and update notes in markdown format.\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"version\": 2.1,\n  \"emergencyUpdate\": false,\n  \"newUpdate\": \"# Version 2.1\\n\\n- Bug fixes\\n- Performance improvements\"\n}\n```"
+          }
+        }
+      ]
+    }
+  ]
+}

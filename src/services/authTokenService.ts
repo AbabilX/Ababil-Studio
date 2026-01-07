@@ -1,12 +1,12 @@
 import { AuthToken } from '../types/auth';
 
-const AUTH_TOKENS_KEY = 'ababil_auth_tokens';
+// In-memory token storage - tokens are cleared on app restart (like Postman)
+let memoryTokens: AuthToken[] = [];
 
-// Auth token operations
+// Auth token operations (in-memory, ephemeral storage)
 export function saveToken(
     token: Omit<AuthToken, 'id' | 'createdAt' | 'updatedAt'>
 ): AuthToken {
-    const tokens = loadTokens();
     const now = Date.now();
     const newToken: AuthToken = {
         ...token,
@@ -15,53 +15,51 @@ export function saveToken(
         updatedAt: now,
     };
 
-    tokens.push(newToken);
-    localStorage.setItem(AUTH_TOKENS_KEY, JSON.stringify(tokens));
+    // Check if token with same name exists, update it instead of adding duplicate
+    const existingIndex = memoryTokens.findIndex((t) => t.name === token.name);
+    if (existingIndex !== -1) {
+        memoryTokens[existingIndex] = newToken;
+    } else {
+        memoryTokens.push(newToken);
+    }
+
     return newToken;
 }
 
 export function loadTokens(): AuthToken[] {
-    try {
-        const data = localStorage.getItem(AUTH_TOKENS_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch {
-        return [];
-    }
+    return [...memoryTokens]; // Return a copy to prevent external mutation
 }
 
 export function updateToken(
     id: string,
     updates: Partial<Omit<AuthToken, 'id' | 'createdAt'>>
 ): AuthToken | null {
-    const tokens = loadTokens();
-    const index = tokens.findIndex((t) => t.id === id);
+    const index = memoryTokens.findIndex((t) => t.id === id);
     if (index === -1) return null;
 
-    tokens[index] = {
-        ...tokens[index],
+    memoryTokens[index] = {
+        ...memoryTokens[index],
         ...updates,
         updatedAt: Date.now(),
     };
-    localStorage.setItem(AUTH_TOKENS_KEY, JSON.stringify(tokens));
-    return tokens[index];
+    return memoryTokens[index];
 }
 
 export function deleteToken(id: string): boolean {
-    const tokens = loadTokens();
-    const filtered = tokens.filter((t) => t.id !== id);
-    if (filtered.length === tokens.length) return false;
-
-    localStorage.setItem(AUTH_TOKENS_KEY, JSON.stringify(filtered));
-    return true;
+    const initialLength = memoryTokens.length;
+    memoryTokens = memoryTokens.filter((t) => t.id !== id);
+    return memoryTokens.length < initialLength;
 }
 
 export function getToken(id: string): AuthToken | null {
-    const tokens = loadTokens();
-    return tokens.find((t) => t.id === id) || null;
+    return memoryTokens.find((t) => t.id === id) || null;
 }
 
 export function getTokenByName(name: string): AuthToken | null {
-    const tokens = loadTokens();
-    return tokens.find((t) => t.name === name) || null;
+    return memoryTokens.find((t) => t.name === name) || null;
 }
 
+// Clear all tokens (useful for logout)
+export function clearAllTokens(): void {
+    memoryTokens = [];
+}
