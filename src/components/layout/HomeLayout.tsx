@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { makeSimpleRequest } from '../../services/httpClient';
-import { HttpResponse } from '../../types/http';
+import { makeHttpRequest } from '../../services/httpClient';
+import { HttpResponse, RequestAuth, HttpRequest } from '../../types/http';
 import {
     SavedRequest,
     Collection,
@@ -8,6 +8,7 @@ import {
 } from '../../types/collection';
 import { RequestHeader } from '../../types/http';
 import { Environment } from '../../types/environment';
+import { AuthToken } from '../../types/auth';
 import {
     saveRequest,
     loadRequests,
@@ -18,10 +19,12 @@ import {
     getActiveEnvironment,
     setActiveEnvironment,
 } from '../../services/environmentService';
+import { loadTokens } from '../../services/authTokenService';
 import {
     replaceVariablesInUrl,
     replaceVariablesInBody,
     replaceVariablesInHeaders,
+    replaceVariablesInAuth,
 } from '../../utils/variableReplacer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { TopHeader } from '../header/TopHeader';
@@ -31,10 +34,10 @@ import { ResponseSection } from '../response/ResponseSection';
 import { Sidebar } from '../sidebar/Sidebar';
 import { EnvironmentPage } from '../environment/EnvironmentPage';
 import { SettingsPage } from '../settings/SettingsPage';
+import { AuthTokensPage } from '../auth/AuthTokensPage';
 import { ResizableLayout } from './ResizableLayout';
-import { createSimpleRequest } from '../../types/http';
 
-type ViewType = 'collections' | 'environments' | 'settings';
+type ViewType = 'collections' | 'environments' | 'authTokens' | 'settings';
 
 export function HomeLayout() {
     const { effectiveTheme } = useTheme();
@@ -52,6 +55,8 @@ export function HomeLayout() {
     const [environments, setEnvironments] = useState<Environment[]>([]);
     const [activeEnvironment, setActiveEnvironmentState] =
         useState<Environment | null>(null);
+    const [authTokens, setAuthTokens] = useState<AuthToken[]>([]);
+    const [requestAuth, setRequestAuth] = useState<RequestAuth | undefined>();
     const [activeRequestId, setActiveRequestId] = useState<
         string | undefined
     >();
@@ -61,7 +66,13 @@ export function HomeLayout() {
     useEffect(() => {
         refreshData();
         refreshEnvironments();
+        refreshAuthTokens();
     }, []);
+
+    const refreshAuthTokens = () => {
+        const tokens = loadTokens();
+        setAuthTokens(tokens);
+    };
 
     const refreshData = () => {
         setCollections(loadCollections());
@@ -99,11 +110,16 @@ export function HomeLayout() {
         setResponse(null);
 
         try {
-            // Replace variables before sending
-            const resolvedUrl = replaceVariablesInUrl(url, activeEnvironment);
+            // Replace variables before sending (including auth tokens)
+            const resolvedUrl = replaceVariablesInUrl(
+                url,
+                activeEnvironment,
+                authTokens
+            );
             const resolvedBody = replaceVariablesInBody(
                 requestBody,
-                activeEnvironment
+                activeEnvironment,
+                authTokens
             );
             // Convert headers array to Record, filtering out disabled and empty headers
             const headersRecord: Record<string, string> = {};
@@ -112,6 +128,39 @@ export function HomeLayout() {
                 .forEach((h) => {
                     headersRecord[h.key] = h.value;
                 });
+
+            // Automatically apply auth tokens if no Authorization header exists
+            // This mimics Postman's behavior where extracted tokens are auto-applied
+            if (
+                !headersRecord['Authorization'] &&
+                !headersRecord['authorization'] &&
+                !requestAuth
+            ) {
+                // Check for common token names in priority order
+                const commonTokenNames = [
+                    'token',
+                    'access_token',
+                    'accessToken',
+                    'authToken',
+                    'bearerToken',
+                    'bearer_token',
+                    'apiToken',
+                    'api_token',
+                ];
+
+                for (const tokenName of commonTokenNames) {
+                    const token = authTokens.find(
+                        (t) => t.name.toLowerCase() === tokenName.toLowerCase()
+                    );
+                    if (token) {
+                        // Automatically add as Bearer token
+                        headersRecord[
+                            'Authorization'
+                        ] = `Bearer ${token.value}`;
+                        break;
+                    }
+                }
+            }
 
             // Add Content-Type header for POST/PUT/PATCH if body exists
             if (resolvedBody && ['POST', 'PUT', 'PATCH'].includes(method)) {
@@ -122,15 +171,34 @@ export function HomeLayout() {
 
             const resolvedHeaders = replaceVariablesInHeaders(
                 headersRecord,
-                activeEnvironment
+                activeEnvironment,
+                authTokens
             );
 
-            const result = await makeSimpleRequest(
+            // Replace variables in auth object if present
+            const resolvedAuth = requestAuth
+                ? replaceVariablesInAuth(
+                      requestAuth,
+                      activeEnvironment,
+                      authTokens
+                  )
+                : undefined;
+
+            // Build full HttpRequest with auth
+            const request: HttpRequest = {
                 method,
-                resolvedUrl,
-                resolvedHeaders,
-                resolvedBody || undefined
-            );
+                url: { raw: resolvedUrl },
+                header: Object.entries(resolvedHeaders).map(([key, value]) => ({
+                    key,
+                    value,
+                })),
+                body: resolvedBody
+                    ? { mode: 'raw', raw: resolvedBody }
+                    : undefined,
+                auth: resolvedAuth,
+            };
+
+            const result = await makeHttpRequest(request);
             setResponse(result);
         } catch (error: unknown) {
             const errorMessage =
@@ -170,6 +238,8 @@ export function HomeLayout() {
         } else {
             setHeaders([]);
         }
+        // Restore auth object if present
+        setRequestAuth(request.auth);
         setResponse(null);
     };
 
@@ -182,12 +252,16 @@ export function HomeLayout() {
                 headersRecord[h.key] = h.value;
             });
 
-        const request = createSimpleRequest(
+        const request: HttpRequest = {
             method,
-            url,
-            headersRecord,
-            requestBody || undefined
-        );
+            url: { raw: url },
+            header: Object.entries(headersRecord).map(([key, value]) => ({
+                key,
+                value,
+            })),
+            body: requestBody ? { mode: 'raw', raw: requestBody } : undefined,
+            auth: requestAuth,
+        };
         const savedRequestData = httpRequestToSavedRequest(
             request,
             name,
@@ -206,6 +280,7 @@ export function HomeLayout() {
         setUrl('');
         setRequestBody('');
         setHeaders([]);
+        setRequestAuth(undefined);
         setResponse(null);
     };
 
@@ -236,14 +311,18 @@ export function HomeLayout() {
             return <EnvironmentPage />;
         }
 
+        if (currentView === 'authTokens') {
+            return <AuthTokensPage />;
+        }
+
         if (currentView === 'settings') {
             return <SettingsPage />;
         }
 
         // Collections view (default)
         return (
-            <div className="h-full overflow-y-auto bg-background p-6">
-                <div className="max-w-5xl mx-auto space-y-6">
+            <div className="h-full overflow-y-auto bg-background">
+                <div className="w-full px-6 py-6 space-y-6">
                     {/* Request Section */}
                     <RequestSection
                         method={method}
@@ -269,6 +348,7 @@ export function HomeLayout() {
                         response={response}
                         loading={loading}
                         isDarkMode={effectiveTheme === 'dark'}
+                        onTokensExtracted={refreshAuthTokens}
                     />
 
                     {/* Footer */}
@@ -296,8 +376,8 @@ export function HomeLayout() {
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Navigation */}
                 <LeftNav
-                    activeItem={currentView}
-                    onItemClick={handleNavClick}
+                    activeItem={currentView as any}
+                    onItemClick={handleNavClick as any}
                 />
 
                 {/* Resizable Layout with Sidebar and Main Content */}

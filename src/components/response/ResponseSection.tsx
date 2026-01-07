@@ -1,7 +1,18 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
-import { Loading01Icon } from 'hugeicons-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '../ui/dialog';
+import { Loading01Icon, Key01Icon } from 'hugeicons-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import {
     vscDarkPlus,
@@ -10,38 +21,105 @@ import {
 import { HttpResponse } from '../../types/http';
 import { getStatusText } from '../../services/httpClient';
 import { detectLanguage, formatBody, getStatusVariant } from '../../utils/helpers';
+import { extractTokensFromResponse } from '../../utils/tokenExtractor';
+import { saveToken } from '../../services/authTokenService';
 
 interface ResponseSectionProps {
     response: HttpResponse | null;
     loading: boolean;
     isDarkMode: boolean;
+    onTokensExtracted?: () => void;
 }
 
 export function ResponseSection({
     response,
     loading,
     isDarkMode,
+    onTokensExtracted,
 }: ResponseSectionProps) {
+    const [extractDialogOpen, setExtractDialogOpen] = useState(false);
+    const [extractedTokens, setExtractedTokens] = useState<
+        Array<{
+            name: string;
+            value: string;
+            path: string;
+            suggestedTokenName: string;
+            selected: boolean;
+            tokenName: string;
+        }>
+    >([]);
+
+    const isJsonResponse = () => {
+        if (!response || !response.body) return false;
+        try {
+            JSON.parse(response.body);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const handleExtractTokens = () => {
+        if (!response) return;
+        const tokens = extractTokensFromResponse(response);
+        setExtractedTokens(
+            tokens.map((t) => ({
+                ...t,
+                selected: true,
+                tokenName: t.suggestedTokenName,
+            }))
+        );
+        setExtractDialogOpen(true);
+    };
+
+    const handleSaveExtractedTokens = () => {
+        extractedTokens
+            .filter((t) => t.selected && t.tokenName.trim())
+            .forEach((t) => {
+                saveToken({
+                    name: t.tokenName.trim(),
+                    value: t.value,
+                    source: 'extracted',
+                });
+            });
+        setExtractDialogOpen(false);
+        setExtractedTokens([]);
+        if (onTokensExtracted) {
+            onTokensExtracted();
+        }
+    };
+
     return (
-        <Card>
-            <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Response</CardTitle>
-                    {response && (
-                        <div className="flex items-center gap-3">
-                            <Badge
-                                variant={getStatusVariant(response.status_code)}
-                            >
-                                {response.status_code}{' '}
-                                {getStatusText(response.status_code)}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">
-                                {response.duration_ms}ms
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </CardHeader>
+        <>
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">Response</CardTitle>
+                        {response && (
+                            <div className="flex items-center gap-3">
+                                {isJsonResponse() && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleExtractTokens}
+                                    >
+                                        <Key01Icon className="w-4 h-4 mr-2" />
+                                        Extract Tokens
+                                    </Button>
+                                )}
+                                <Badge
+                                    variant={getStatusVariant(response.status_code)}
+                                >
+                                    {response.status_code}{' '}
+                                    {getStatusText(response.status_code)}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground">
+                                    {response.duration_ms}ms
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </CardHeader>
             <CardContent>
                 {loading ? (
                     <div className="flex items-center justify-center h-[300px]">
@@ -132,6 +210,108 @@ export function ResponseSection({
                 )}
             </CardContent>
         </Card>
+
+            {/* Extract Tokens Dialog */}
+            <Dialog open={extractDialogOpen} onOpenChange={setExtractDialogOpen}>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Extract Tokens from Response</DialogTitle>
+                        <DialogDescription>
+                            Select the tokens you want to save. They will be
+                            available for use in your requests via{' '}
+                            <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                                {`{{token_name}}`}
+                            </code>
+                            .
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        {extractedTokens.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                                No tokens found in response
+                            </p>
+                        ) : (
+                            <div className="space-y-3">
+                                {extractedTokens.map((token, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-start gap-3 p-3 border rounded-lg"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={token.selected}
+                                            onChange={(e) => {
+                                                const updated = [...extractedTokens];
+                                                updated[index].selected =
+                                                    e.target.checked;
+                                                setExtractedTokens(updated);
+                                            }}
+                                            className="mt-1 h-4 w-4 rounded border-gray-300"
+                                        />
+                                        <div className="flex-1 space-y-2">
+                                            <div>
+                                                <label className="text-xs font-medium text-muted-foreground">
+                                                    Token Name
+                                                </label>
+                                                <Input
+                                                    value={token.tokenName}
+                                                    onChange={(e) => {
+                                                        const updated = [
+                                                            ...extractedTokens,
+                                                        ];
+                                                        updated[index].tokenName =
+                                                            e.target.value;
+                                                        setExtractedTokens(updated);
+                                                    }}
+                                                    placeholder="token_name"
+                                                    disabled={!token.selected}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-muted-foreground">
+                                                    Path
+                                                </label>
+                                                <code className="text-xs bg-muted px-2 py-1 rounded block">
+                                                    {token.path}
+                                                </code>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-muted-foreground">
+                                                    Value
+                                                </label>
+                                                <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
+                                                    {token.value.length > 50
+                                                        ? `${token.value.slice(0, 50)}...`
+                                                        : token.value}
+                                                </code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setExtractDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSaveExtractedTokens}
+                            disabled={
+                                extractedTokens.filter(
+                                    (t) => t.selected && t.tokenName.trim()
+                                ).length === 0
+                            }
+                        >
+                            Save Selected Tokens
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 

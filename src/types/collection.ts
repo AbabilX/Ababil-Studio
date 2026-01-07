@@ -1,4 +1,4 @@
-import { HttpRequest } from './http';
+import { HttpRequest, RequestAuth } from './http';
 
 export interface SavedRequest {
     id: string;
@@ -7,6 +7,7 @@ export interface SavedRequest {
     url: string;
     body?: string;
     headers?: Record<string, string>;
+    auth?: RequestAuth;
     collectionId?: string;
     createdAt: number;
     updatedAt: number;
@@ -33,6 +34,7 @@ export function savedRequestToHttpRequest(saved: SavedRequest): HttpRequest {
               }))
             : undefined,
         body: saved.body ? { mode: 'raw', raw: saved.body } : undefined,
+        auth: saved.auth,
     };
 }
 
@@ -50,6 +52,7 @@ export function httpRequestToSavedRequest(
         headers: request.header
             ? Object.fromEntries(request.header.map((h) => [h.key, h.value]))
             : undefined,
+        auth: request.auth,
         collectionId,
     };
 }

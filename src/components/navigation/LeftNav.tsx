@@ -1,7 +1,7 @@
-import { Folder01Icon, GlobeIcon, Settings01Icon } from 'hugeicons-react';
+import { Folder01Icon, GlobeIcon, Settings01Icon, LockIcon } from 'hugeicons-react';
 import { Button } from '../ui/button';
 
-type NavItem = 'collections' | 'environments' | 'settings';
+type NavItem = 'collections' | 'environments' | 'authTokens' | 'settings';
 
 interface LeftNavProps {
     activeItem: NavItem;
@@ -23,6 +23,11 @@ export function LeftNav({ activeItem, onItemClick }: LeftNavProps) {
             id: 'environments',
             label: 'Environments',
             icon: <GlobeIcon className="w-4 h-4" />,
+        },
+        {
+            id: 'authTokens',
+            label: 'Auth Tokens',
+            icon: <LockIcon className="w-4 h-4" />,
         },
         {
             id: 'settings',
