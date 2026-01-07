@@ -161,6 +161,7 @@ function convertPostmanRequestToHttpRequest(
             : undefined,
         auth: postmanRequest.auth,
         description: postmanRequest.description,
+        testScript: (postmanRequest as any).testScript,
     };
 }
 
@@ -178,9 +179,14 @@ function convertPostmanItems(
     for (const item of items) {
         if (item.request) {
             // This is a request
-            const httpRequest = convertPostmanRequestToHttpRequest(
-                item.request
-            );
+            // Extract test script if it exists in events
+            const testEvent = item.event?.find((e: any) => e.listen === 'test');
+            const testScript = testEvent?.script?.exec?.join('\n');
+
+            const httpRequest = convertPostmanRequestToHttpRequest({
+                ...item.request,
+                testScript,
+            } as any);
             const savedRequestData = httpRequestToSavedRequest(
                 httpRequest,
                 item.name,

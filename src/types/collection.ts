@@ -8,6 +8,7 @@ export interface SavedRequest {
     body?: string;
     headers?: Record<string, string>;
     auth?: RequestAuth;
+    testScript?: string;
     collectionId?: string;
     createdAt: number;
     updatedAt: number;
@@ -35,6 +36,7 @@ export function savedRequestToHttpRequest(saved: SavedRequest): HttpRequest {
             : undefined,
         body: saved.body ? { mode: 'raw', raw: saved.body } : undefined,
         auth: saved.auth,
+        testScript: saved.testScript,
     };
 }
 
@@ -53,6 +55,7 @@ export function httpRequestToSavedRequest(
             ? Object.fromEntries(request.header.map((h) => [h.key, h.value]))
             : undefined,
         auth: request.auth,
+        testScript: request.testScript,
         collectionId,
     };
 }

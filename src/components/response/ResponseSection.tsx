@@ -28,11 +28,13 @@ import {
 } from '../../utils/helpers';
 import { extractTokensFromResponse } from '../../utils/tokenExtractor';
 import { saveToken } from '../../services/authTokenService';
+import { parseTokenMappings, getValueByPath } from '../../utils/scriptParser';
 
 interface ResponseSectionProps {
     response: HttpResponse | null;
     loading: boolean;
     isDarkMode: boolean;
+    testScript?: string;
     onTokensExtracted?: () => void;
 }
 
@@ -40,6 +42,7 @@ export function ResponseSection({
     response,
     loading,
     isDarkMode,
+    testScript,
     onTokensExtracted,
 }: ResponseSectionProps) {
     const [extractDialogOpen, setExtractDialogOpen] = useState(false);
@@ -78,26 +81,69 @@ export function ResponseSection({
         }
         lastResponseRef.current = responseKey;
 
-        const tokens = extractTokensFromResponse(response);
-        if (tokens.length > 0) {
-            // Auto-save all extracted tokens
-            tokens.forEach((t) => {
-                saveToken({
-                    name: t.suggestedTokenName,
-                    value: t.value,
-                    source: 'extracted',
-                });
-            });
+        let savedCount = 0;
+        const tokenNames: string[] = [];
 
+        // 1. Try dynamic extraction from test script
+        if (testScript) {
+            try {
+                const jsonData = JSON.parse(response.body);
+                const mappings = parseTokenMappings(testScript);
+
+                mappings.forEach((mapping) => {
+                    const value = getValueByPath(jsonData, mapping.jsonPath);
+                    if (value && typeof value === 'string') {
+                        saveToken({
+                            name: mapping.variableName,
+                            value: value,
+                            source: 'extracted',
+                        });
+                        tokenNames.push(mapping.variableName);
+                        savedCount++;
+                    }
+                });
+            } catch (e) {
+                console.error(
+                    'Failed to parse response for dynamic extraction:',
+                    e
+                );
+            }
+        }
+
+        // 2. Fallback to heuristic extraction if no tokens were found via script
+        if (savedCount === 0) {
+            const tokens = extractTokensFromResponse(response);
+            if (tokens.length > 0) {
+                // Auto-save all extracted tokens using heuristic names
+                tokens.forEach((t) => {
+                    saveToken({
+                        name: t.suggestedTokenName,
+                        value: t.value,
+                        source: 'extracted',
+                    });
+                    tokenNames.push(t.suggestedTokenName);
+                    savedCount++;
+
+                    // Special case for common tokens (legacy compatibility for default collections)
+                    if (t.suggestedTokenName === 'user_token') {
+                        saveToken({
+                            name: 'admin_token',
+                            value: t.value,
+                            source: 'extracted',
+                        });
+                        tokenNames.push('admin_token');
+                        savedCount++;
+                    }
+                });
+            }
+        }
+
+        if (savedCount > 0) {
             // Show toast notification
             toast.success(
-                `${tokens.length} token${
-                    tokens.length > 1 ? 's' : ''
-                } extracted`,
+                `${savedCount} token${savedCount > 1 ? 's' : ''} extracted`,
                 {
-                    description: tokens
-                        .map((t) => t.suggestedTokenName)
-                        .join(', '),
+                    description: tokenNames.join(', '),
                 }
             );
 
@@ -105,7 +151,7 @@ export function ResponseSection({
                 onTokensExtracted();
             }
         }
-    }, [response, onTokensExtracted]);
+    }, [response, testScript, onTokensExtracted]);
 
     const isJsonResponse = () => {
         if (!response || !response.body) return false;

@@ -70,6 +70,7 @@ export interface HttpRequest {
     url?: RequestUrl;
     description?: string;
     auth?: RequestAuth;
+    testScript?: string;
 }
 
 export interface HttpResponse {

@@ -62,6 +62,7 @@ export function HomeLayout() {
         string | undefined
     >();
     const [currentRequestName, setCurrentRequestName] = useState<string>('');
+    const [testScript, setTestScript] = useState<string | undefined>();
 
     // Load data on mount
     useEffect(() => {
@@ -197,6 +198,7 @@ export function HomeLayout() {
                     ? { mode: 'raw', raw: resolvedBody }
                     : undefined,
                 auth: resolvedAuth,
+                testScript,
             };
 
             const result = await makeHttpRequest(request);
@@ -241,6 +243,7 @@ export function HomeLayout() {
         }
         // Restore auth object if present
         setRequestAuth(request.auth);
+        setTestScript(request.testScript);
         setResponse(null);
     };
 
@@ -262,6 +265,7 @@ export function HomeLayout() {
             })),
             body: requestBody ? { mode: 'raw', raw: requestBody } : undefined,
             auth: requestAuth,
+            testScript,
         };
         const savedRequestData = httpRequestToSavedRequest(
             request,
@@ -282,6 +286,7 @@ export function HomeLayout() {
         setRequestBody('');
         setHeaders([]);
         setRequestAuth(undefined);
+        setTestScript(undefined);
         setResponse(null);
     };
 
@@ -349,6 +354,7 @@ export function HomeLayout() {
                         response={response}
                         loading={loading}
                         isDarkMode={effectiveTheme === 'dark'}
+                        testScript={testScript}
                         onTokensExtracted={refreshAuthTokens}
                     />
 
