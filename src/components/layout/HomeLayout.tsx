@@ -13,6 +13,7 @@ import {
     saveRequest,
     loadRequests,
     loadCollections,
+    getCollection,
 } from '../../services/storage';
 import {
     loadEnvironments,
@@ -26,6 +27,7 @@ import {
     replaceVariablesInHeaders,
     replaceVariablesInAuth,
 } from '../../utils/variableReplacer';
+import { resolveAuth } from '../../utils/authInheritance';
 import { useTheme } from '../../contexts/ThemeContext';
 import { TopHeader } from '../header/TopHeader';
 import { LeftNav } from '../navigation/LeftNav';
@@ -241,8 +243,16 @@ export function HomeLayout() {
         } else {
             setHeaders([]);
         }
-        // Restore auth object if present
-        setRequestAuth(request.auth);
+
+        // Resolve auth with inheritance
+        let resolvedAuth = request.auth;
+        if (request.collectionId) {
+            const collection = getCollection(request.collectionId);
+            if (collection) {
+                resolvedAuth = resolveAuth(request.auth, collection.auth);
+            }
+        }
+        setRequestAuth(resolvedAuth);
         setTestScript(request.testScript);
         setResponse(null);
     };

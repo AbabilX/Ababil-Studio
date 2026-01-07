@@ -18,7 +18,11 @@ import {
     DialogTitle,
 } from '../ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import { Loading01Icon, MailSend01Icon, SaveEnergy01Icon } from 'hugeicons-react';
+import {
+    Loading01Icon,
+    MailSend01Icon,
+    SaveEnergy01Icon,
+} from 'hugeicons-react';
 import { HTTP_METHODS } from '../../utils/constants';
 import { getMethodColor } from '../../utils/helpers';
 import { Collection } from '../../types/collection';
@@ -67,7 +71,8 @@ export function RequestSection({
 }: RequestSectionProps) {
     const [saveDialogOpen, setSaveDialogOpen] = useState(false);
     const [saveName, setSaveName] = useState(currentRequestName || '');
-    const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
+    const [selectedCollectionId, setSelectedCollectionId] =
+        useState<string>('');
 
     const handleSave = () => {
         if (saveName.trim() && onSave) {
@@ -101,147 +106,277 @@ export function RequestSection({
                         )}
                     </div>
                 </CardHeader>
-            <CardContent className="space-y-4">
-                {/* URL Bar */}
-                <div className="flex gap-2">
-                    <Select value={method} onValueChange={onMethodChange}>
-                        <SelectTrigger className="w-[130px]">
-                            <SelectValue>
-                                <span
-                                    className={`font-semibold ${getMethodColor(
-                                        method
-                                    )}`}
-                                >
-                                    {method}
-                                </span>
-                            </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {HTTP_METHODS.map((m) => (
-                                <SelectItem key={m} value={m}>
+                <CardContent className="space-y-4">
+                    {/* URL Bar */}
+                    <div className="flex gap-2">
+                        <Select value={method} onValueChange={onMethodChange}>
+                            <SelectTrigger className="w-[130px]">
+                                <SelectValue>
                                     <span
                                         className={`font-semibold ${getMethodColor(
-                                            m
+                                            method
                                         )}`}
                                     >
-                                        {m}
+                                        {method}
                                     </span>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <VariableUrlInput
-                        value={url}
-                        onChange={onUrlChange}
-                        onKeyDown={onKeyDown}
-                        placeholder="Enter request URL..."
-                        activeEnvironment={activeEnvironment || null}
-                        onEnvironmentUpdate={onEnvironmentUpdate}
-                    />
-
-                    <Button onClick={onSend} disabled={loading || !url.trim()}>
-                        {loading ? (
-                            <Loading01Icon className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <MailSend01Icon className="w-4 h-4" />
-                        )}
-                        Send
-                    </Button>
-                </div>
-
-                {/* Headers and Body Tabs */}
-                <Tabs defaultValue="headers" className="w-full">
-                    <TabsList className={['POST', 'PUT', 'PATCH'].includes(method) ? 'grid w-full grid-cols-2' : 'grid w-full grid-cols-1'}>
-                        <TabsTrigger value="headers">Headers</TabsTrigger>
-                        {['POST', 'PUT', 'PATCH'].includes(method) && (
-                            <TabsTrigger value="body">Body</TabsTrigger>
-                        )}
-                    </TabsList>
-                    <TabsContent value="headers" className="mt-4">
-                        <HeadersTable headers={headers} onChange={onHeadersChange} />
-                    </TabsContent>
-                    {['POST', 'PUT', 'PATCH'].includes(method) && (
-                        <TabsContent value="body" className="mt-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">
-                                    Request Body (JSON)
-                                </label>
-                                <VariableTextarea
-                                    value={requestBody}
-                                    onChange={onBodyChange}
-                                    placeholder='{"key": "value"}'
-                                    rows={8}
-                                    activeEnvironment={activeEnvironment || null}
-                                    onEnvironmentUpdate={onEnvironmentUpdate}
-                                />
-                            </div>
-                        </TabsContent>
-                    )}
-                </Tabs>
-            </CardContent>
-        </Card>
-
-        {/* Save Dialog */}
-        <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Save Request</DialogTitle>
-                    <DialogDescription>
-                        Save this request to your collection for easy access
-                        later.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                            Request Name
-                        </label>
-                        <Input
-                            value={saveName}
-                            onChange={(e) => setSaveName(e.target.value)}
-                            placeholder="My API Request"
-                            autoFocus
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                            Collection (Optional)
-                        </label>
-                        <Select
-                            value={selectedCollectionId}
-                            onValueChange={setSelectedCollectionId}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="No collection" />
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">No collection</SelectItem>
-                                {collections.map((collection) => (
-                                    <SelectItem
-                                        key={collection.id}
-                                        value={collection.id}
-                                    >
-                                        {collection.name}
+                                {HTTP_METHODS.map((m) => (
+                                    <SelectItem key={m} value={m}>
+                                        <span
+                                            className={`font-semibold ${getMethodColor(
+                                                m
+                                            )}`}
+                                        >
+                                            {m}
+                                        </span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <VariableUrlInput
+                            value={url}
+                            onChange={onUrlChange}
+                            onKeyDown={onKeyDown}
+                            placeholder="Enter request URL..."
+                            activeEnvironment={activeEnvironment || null}
+                            onEnvironmentUpdate={onEnvironmentUpdate}
+                        />
+
+                        <Button
+                            onClick={onSend}
+                            disabled={loading || !url.trim()}
+                        >
+                            {loading ? (
+                                <Loading01Icon className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <MailSend01Icon className="w-4 h-4" />
+                            )}
+                            Send
+                        </Button>
                     </div>
-                </div>
-                <DialogFooter>
-                    <Button
-                        variant="outline"
-                        onClick={() => setSaveDialogOpen(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={!saveName.trim()}>
-                        Save
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+
+                    {/* Postman-style Tabs: Params, Auth, Headers, Body */}
+                    <Tabs defaultValue="headers" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                            <TabsTrigger value="params">Params</TabsTrigger>
+                            <TabsTrigger value="auth">Auth</TabsTrigger>
+                            <TabsTrigger value="headers">
+                                Headers{' '}
+                                {headers.filter((h) => h.key.trim()).length >
+                                    0 &&
+                                    `(${
+                                        headers.filter((h) => h.key.trim())
+                                            .length
+                                    })`}
+                            </TabsTrigger>
+                            <TabsTrigger value="body">Body</TabsTrigger>
+                        </TabsList>
+
+                        {/* Params Tab */}
+                        <TabsContent value="params" className="mt-4">
+                            <div className="text-sm text-muted-foreground p-4 text-center border border-dashed rounded-md">
+                                Query parameters are extracted from the URL
+                                automatically.
+                                <br />
+                                Add them directly to the URL:{' '}
+                                <code className="bg-muted px-1 rounded">
+                                    ?key=value
+                                </code>
+                            </div>
+                        </TabsContent>
+
+                        {/* Auth Tab */}
+                        <TabsContent value="auth" className="mt-4">
+                            <div className="grid grid-cols-[200px_1fr] gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-sm font-medium">
+                                        Auth Type
+                                    </label>
+                                    <Select defaultValue="inherit">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select auth type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="inherit">
+                                                Inherit from parent
+                                            </SelectItem>
+                                            <SelectItem value="noauth">
+                                                No Auth
+                                            </SelectItem>
+                                            <SelectItem value="bearer">
+                                                Bearer Token
+                                            </SelectItem>
+                                            <SelectItem value="basic">
+                                                Basic Auth
+                                            </SelectItem>
+                                            <SelectItem value="apikey">
+                                                API Key
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground">
+                                        The authorization header will be
+                                        automatically generated when you send
+                                        the request.
+                                    </p>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-sm font-medium">
+                                        Token
+                                    </label>
+                                    <Input
+                                        placeholder="{{user_token}}"
+                                        className="font-mono"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Use variables like{' '}
+                                        <code className="bg-muted px-1 rounded">{`{{token_name}}`}</code>{' '}
+                                        to reference extracted tokens.
+                                    </p>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        {/* Headers Tab */}
+                        <TabsContent value="headers" className="mt-4">
+                            <HeadersTable
+                                headers={headers}
+                                onChange={onHeadersChange}
+                            />
+                        </TabsContent>
+
+                        {/* Body Tab */}
+                        <TabsContent value="body" className="mt-4">
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-4">
+                                    <label className="text-sm font-medium">
+                                        Body Type:
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="bg-primary/10"
+                                        >
+                                            none
+                                        </Button>
+                                        <Button variant="outline" size="sm">
+                                            form-data
+                                        </Button>
+                                        <Button variant="outline" size="sm">
+                                            x-www-form-urlencoded
+                                        </Button>
+                                        <Button variant="default" size="sm">
+                                            raw
+                                        </Button>
+                                        <Button variant="outline" size="sm">
+                                            binary
+                                        </Button>
+                                    </div>
+                                    <Select defaultValue="json">
+                                        <SelectTrigger className="w-[120px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="json">
+                                                JSON
+                                            </SelectItem>
+                                            <SelectItem value="text">
+                                                Text
+                                            </SelectItem>
+                                            <SelectItem value="xml">
+                                                XML
+                                            </SelectItem>
+                                            <SelectItem value="html">
+                                                HTML
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <VariableTextarea
+                                    value={requestBody}
+                                    onChange={onBodyChange}
+                                    placeholder='{"key": "value"}'
+                                    rows={10}
+                                    activeEnvironment={
+                                        activeEnvironment || null
+                                    }
+                                    onEnvironmentUpdate={onEnvironmentUpdate}
+                                />
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </CardContent>
+            </Card>
+
+            {/* Save Dialog */}
+            <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Save Request</DialogTitle>
+                        <DialogDescription>
+                            Save this request to your collection for easy access
+                            later.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                                Request Name
+                            </label>
+                            <Input
+                                value={saveName}
+                                onChange={(e) => setSaveName(e.target.value)}
+                                placeholder="My API Request"
+                                autoFocus
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                                Collection (Optional)
+                            </label>
+                            <Select
+                                value={selectedCollectionId}
+                                onValueChange={setSelectedCollectionId}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="No collection" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">
+                                        No collection
+                                    </SelectItem>
+                                    {collections.map((collection) => (
+                                        <SelectItem
+                                            key={collection.id}
+                                            value={collection.id}
+                                        >
+                                            {collection.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setSaveDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={!saveName.trim()}
+                        >
+                            Save
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

@@ -19,6 +19,7 @@ export interface Collection {
     name: string;
     requests: string[]; // request IDs
     collections?: string[]; // nested collection IDs (optional for future)
+    auth?: RequestAuth; // collection-level auth (inherited by requests)
     createdAt: number;
     updatedAt: number;
 }

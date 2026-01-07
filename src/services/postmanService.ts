@@ -248,6 +248,7 @@ export async function importPostmanCollection(
         name: postmanCollection.info.name || 'Imported Collection',
         requests: [],
         collections: [],
+        auth: postmanCollection.auth, // Store collection-level auth for inheritance
     });
 
     // Convert items under parent collection
