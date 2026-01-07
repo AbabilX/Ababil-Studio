@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -164,6 +164,13 @@ export function ResponseSection({
         }
     };
 
+    // Check if tokens exist in the response
+    const hasTokens = useMemo(() => {
+        if (!response || !isJsonResponse()) return false;
+        const tokens = extractTokensFromResponse(response);
+        return tokens.length > 0;
+    }, [response]);
+
     const handleExtractTokens = () => {
         if (!response) return;
         const tokens = extractTokensFromResponse(response);
@@ -202,7 +209,7 @@ export function ResponseSection({
                         <CardTitle className="text-lg">Response</CardTitle>
                         {response && (
                             <div className="flex items-center gap-3">
-                                {isJsonResponse() && (
+                                {hasTokens && (
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -251,7 +258,9 @@ export function ResponseSection({
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setExpandDialogOpen(true)}
+                                            onClick={() =>
+                                                setExpandDialogOpen(true)
+                                            }
                                             className="bg-background/80 backdrop-blur-sm"
                                         >
                                             <Maximize01Icon className="w-4 h-4 mr-2" />
@@ -260,9 +269,13 @@ export function ResponseSection({
                                     </div>
                                     <div className="rounded-lg max-h-[400px] overflow-auto border border-border">
                                         <SyntaxHighlighter
-                                            language={detectLanguage(response.body)}
+                                            language={detectLanguage(
+                                                response.body
+                                            )}
                                             style={
-                                                isDarkMode ? vscDarkPlus : oneLight
+                                                isDarkMode
+                                                    ? vscDarkPlus
+                                                    : oneLight
                                             }
                                             customStyle={{
                                                 margin: 0,
@@ -463,9 +476,7 @@ export function ResponseSection({
                             <div className="rounded-lg border border-border">
                                 <SyntaxHighlighter
                                     language={detectLanguage(response.body)}
-                                    style={
-                                        isDarkMode ? vscDarkPlus : oneLight
-                                    }
+                                    style={isDarkMode ? vscDarkPlus : oneLight}
                                     customStyle={{
                                         margin: 0,
                                         padding: '1rem',
