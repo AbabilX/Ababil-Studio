@@ -9,124 +9,124 @@
   </p>
 
   <p>
-    <strong>Postman এর একটি আধুনিক, অতি দ্রুত বিকল্প</strong><br>
-    Rust core + Electron + React + TypeScript দিয়ে তৈরি
+    <strong>A modern, blazingly fast alternative to Postman</strong><br>
+    Built with Rust core + Electron + React + TypeScript
   </p>
 
   <p>
-    <strong>🇧🇩 বাংলা</strong> • <a href="readme/README.en.md">🇬🇧 English</a>
+    <strong>🇬🇧 English</strong> • <a href="readme/README.bn.md">🇧🇩 বাংলা</a>
   </p>
 </div>
 
 ---
 
-## 🌟 সংক্ষিপ্ত বিবরণ
+## 🌟 Overview
 
-**আবাবিল স্টুডিও** একটি ওপেন-সোর্স API ডেভেলপমেন্ট এবং টেস্টিং প্ল্যাটফর্ম যা Postman এর মতো ঐতিহ্যবাহী টুলগুলির চেয়ে দ্রুত, হালকা এবং আরও কার্যকর হওয়ার জন্য ডিজাইন করা হয়েছে। Rust এর পারফরম্যান্স ক্ষমতা ব্যবহার করে, আবাবিল আধুনিক ওয়েব প্রযুক্তির সাথে নির্মিত একটি সুন্দর, স্বজ্ঞাত ইউজার ইন্টারফেস বজায় রেখে প্রায় তাৎক্ষণিক রিকোয়েস্ট এক্সিকিউশন প্রদান করে।
+**Ababil Studio** is an open-source API development and testing platform designed to be faster, lighter, and more efficient than traditional tools like Postman. By leveraging Rust's performance capabilities at its core, Ababil delivers near-instant request execution while maintaining a beautiful, intuitive user interface built with modern web technologies.
 
-### কেন আবাবিল?
+### Why Ababil?
 
--   **⚡ অবিশ্বাস্য দ্রুত**: Rust-চালিত কোর দ্রুততম HTTP রিকোয়েস্ট প্রসেসিং নিশ্চিত করে
--   **🪶 অত্যন্ত হালকা**: Electron-ভারী বিকল্পগুলির তুলনায় ন্যূনতম রিসোর্স ব্যবহার
--   **🎨 আধুনিক UI**: React এবং Tailwind CSS দিয়ে তৈরি সুন্দর, রেসপন্সিভ ইন্টারফেস
--   **🔓 ওপেন সোর্স**: সম্পূর্ণ স্বচ্ছ, কমিউনিটি-চালিত ডেভেলপমেন্ট
--   **🔐 গোপনীয়তা প্রথম**: আপনার ডেটা আপনার মেশিনেই থাকে
--   **🛠️ ডেভেলপার-বান্ধব**: ডেভেলপারদের দ্বারা, ডেভেলপারদের জন্য ডিজাইন করা
-
----
-
-## ✨ বৈশিষ্ট্যসমূহ
-
-### মূল সক্ষমতা
-
--   **HTTP মেথড সাপোর্ট**: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
--   **রিকোয়েস্ট বিল্ডার**: API রিকোয়েস্ট তৈরির জন্য স্বজ্ঞাত ইন্টারফেস
--   **কালেকশন ম্যানেজমেন্ট**: আপনার API এন্ডপয়েন্টগুলি সংগঠিত এবং সংরক্ষণ করুন
--   **এনভায়রনমেন্ট ভেরিয়েবল**: একাধিক এনভায়রনমেন্ট নির্বিঘ্নে পরিচালনা করুন
--   **রেসপন্স ভিউয়ার**: JSON, XML, HTML এবং আরও অনেক কিছুর জন্য সুন্দর সিনট্যাক্স হাইলাইটিং
--   **রিকোয়েস্ট হিস্ট্রি**: আপনার সমস্ত API কল ট্র্যাক করুন
--   **অথেন্টিকেশন**: Bearer, Basic, OAuth, এবং API Key অথেন্টিকেশন সাপোর্ট
-
-### পারফরম্যান্স বৈশিষ্ট্য
-
--   **Rust-চালিত ইঞ্জিন**: রিকোয়েস্ট এক্সিকিউশনের জন্য নেটিভ পারফরম্যান্স
--   **সমান্তরাল রিকোয়েস্ট**: একসাথে একাধিক API কল পরিচালনা করুন
--   **ন্যূনতম লেটেন্সি**: অপ্টিমাইজড রিকোয়েস্ট পাইপলাইন
--   **কম মেমরি ব্যবহার**: দক্ষ রিসোর্স ম্যানেজমেন্ট
-
-### ডেভেলপার অভিজ্ঞতা
-
--   **কোড স্নিপেট**: একাধিক ভাষায় ক্লায়েন্ট কোড জেনারেট করুন
--   **ইমপোর্ট/এক্সপোর্ট**: আপনার টিমের সাথে কালেকশন শেয়ার করুন
--   **ডার্ক মোড**: দীর্ঘ কোডিং সেশনের সময় চোখে সহজ
--   **কীবোর্ড শর্টকাট**: আপনার ওয়ার্কফ্লো দ্রুততর করুন
+-   **⚡ Blazing Fast**: Rust-powered core ensures lightning-fast HTTP request processing
+-   **🪶 Lightweight**: Minimal resource footprint compared to Electron-heavy alternatives
+-   **🎨 Modern UI**: Beautiful, responsive interface built with React and Tailwind CSS
+-   **🔓 Open Source**: Fully transparent, community-driven development
+-   **🔐 Privacy First**: Your data stays on your machine
+-   **🛠️ Developer-Friendly**: Designed by developers, for developers
 
 ---
 
-## 🚀 শুরু করা যাক
+## ✨ Features
 
-### প্রয়োজনীয়তা
+### Core Capabilities
 
--   **Node.js** (v16 বা তার বেশি)
--   **Bun** অথবা **npm** অথবা **yarn**
--   **Rust** (সোর্স থেকে বিল্ড করার জন্য)
+-   **HTTP Methods Support**: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
+-   **Request Builder**: Intuitive interface for crafting API requests
+-   **Collections Management**: Organize and save your API endpoints
+-   **Environment Variables**: Manage multiple environments seamlessly
+-   **Response Viewer**: Beautiful syntax highlighting for JSON, XML, HTML, and more
+-   **Request History**: Track all your API calls
+-   **Authentication**: Support for Bearer, Basic, OAuth, and API Key authentication
 
-### ইনস্টলেশন
+### Performance Features
 
-#### অপশন ১: প্রি-বিল্ট বাইনারি ডাউনলোড
+-   **Rust-Powered Engine**: Native performance for request execution
+-   **Concurrent Requests**: Handle multiple API calls simultaneously
+-   **Minimal Latency**: Optimized request pipeline
+-   **Low Memory Usage**: Efficient resource management
+
+### Developer Experience
+
+-   **Code Snippets**: Generate client code in multiple languages
+-   **Import/Export**: Share collections with your team
+-   **Dark Mode**: Easy on the eyes during long coding sessions
+-   **Keyboard Shortcuts**: Speed up your workflow
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+-   **Node.js** (v16 or higher)
+-   **Bun** or **npm** or **yarn**
+-   **Rust** (for building from source)
+
+### Installation
+
+#### Option 1: Download Pre-built Binary
 
 ```bash
-# সর্বশেষ রিলিজ ডাউনলোড করুন
+# Download the latest release
 https://github.com/AbabilX/Ababil-Studio/releases/
 
-# v1.0.0 - প্রথম স্টেবল রিলিজ এখন উপলব্ধ!
+# v1.0.0 - First stable release is now available!
 ```
 
-#### অপশন ২: সোর্স থেকে বিল্ড করুন
+#### Option 2: Build from Source
 
-1. **রিপোজিটরি ক্লোন করুন**
+1. **Clone the repository**
 
     ```bash
     git clone https://github.com/AbabilX/Ababil-Studio.git
     cd Ababil-Studio
     ```
 
-2. **ডিপেন্ডেন্সি ইনস্টল করুন**
+2. **Install dependencies**
 
     ```bash
     bun install
-    # অথবা
+    # or
     npm install
     ```
 
-3. **ডেভেলপমেন্ট মোডে চালান**
+3. **Run in development mode**
 
     ```bash
     bun start
-    # অথবা
+    # or
     npm start
     ```
 
-4. **প্রোডাকশনের জন্য বিল্ড করুন**
+4. **Build for production**
 
     ```bash
     bun run build
-    # অথবা
+    # or
     npm run build
     ```
 
-5. **Electron অ্যাপ চালান**
+5. **Run Electron app**
     ```bash
     bun run electron
-    # অথবা
+    # or
     npm run electron
     ```
 
 ---
 
-## 🏗️ আর্কিটেকচার
+## 🏗️ Architecture
 
-আবাবিল স্টুডিও একটি হাইব্রিড আর্কিটেকচার ব্যবহার করে যেখানে Rust নেটিভ লাইব্রেরি HTTP রিকোয়েস্ট এক্সিকিউশন পরিচালনা করে:
+Ababil Studio uses a hybrid architecture where a Rust native library handles HTTP request execution:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -160,164 +160,164 @@ https://github.com/AbabilX/Ababil-Studio/releases/
 └─────────────────────────────────────────────────────────┘
 ```
 
-### ডেটা ফ্লো
+### Data Flow
 
-1. **UI → Rust**: React UI থেকে JSON রিকোয়েস্ট IPC এর মাধ্যমে Electron Main প্রসেসে যায়
-2. **Main → Native**: koffi FFI ব্যবহার করে Rust লাইব্রেরি কল করা হয়
-3. **Rust Execution**: Rust `reqwest` ব্যবহার করে HTTP রিকোয়েস্ট এক্সিকিউট করে
-4. **Response**: JSON রেসপন্স একই পথে UI তে ফিরে আসে
-
----
-
-## 🛠️ প্রযুক্তি স্ট্যাক
-
-### মূল প্রযুক্তি
-
--   **Rust**: উচ্চ-পারফরম্যান্স HTTP ক্লায়েন্ট এবং রিকোয়েস্ট প্রসেসিং
--   **Electron**: ক্রস-প্ল্যাটফর্ম ডেস্কটপ অ্যাপ্লিকেশন ফ্রেমওয়ার্ক
--   **React 19**: সর্বশেষ ফিচার সহ আধুনিক UI লাইব্রেরি
--   **TypeScript**: টাইপ-সেফ ডেভেলপমেন্ট
--   **Tailwind CSS**: ইউটিলিটি-ফার্স্ট স্টাইলিং
-
-### UI কম্পোনেন্ট
-
--   **shadcn/ui**: উচ্চ-মানের, এক্সেসিবল কম্পোনেন্ট লাইব্রেরি
--   **Radix UI**: আনস্টাইলড, এক্সেসিবল কম্পোনেন্ট
--   **Lucide React**: সুন্দর আইকন লাইব্রেরি
-
-### ডেভেলপমেন্ট টুলস
-
--   **React Scripts**: বিল্ড টুলিং এবং ডেভেলপমেন্ট সার্ভার
--   **PostCSS**: CSS প্রসেসিং
--   **ESLint**: কোড কোয়ালিটি এবং কনসিস্টেন্সি
+1. **UI → Rust**: JSON request from React UI goes to Electron Main process via IPC
+2. **Main → Native**: Rust library is called using koffi FFI
+3. **Rust Execution**: Rust executes HTTP request using `reqwest`
+4. **Response**: JSON response returns to UI through the same path
 
 ---
 
-## 📖 ব্যবহার
+## 🛠️ Tech Stack
 
-### আপনার প্রথম রিকোয়েস্ট করুন
+### Core Technologies
 
-1. **আবাবিল স্টুডিও চালু করুন**
-2. **HTTP মেথড নির্বাচন করুন** (GET, POST, ইত্যাদি)
-3. **আপনার API এন্ডপয়েন্টের URL লিখুন**
-4. **প্রয়োজন অনুযায়ী হেডার, প্যারামিটার বা বডি যোগ করুন**
-5. **Send ক্লিক করুন** এবং তাৎক্ষণিকভাবে রেসপন্স দেখুন
+-   **Rust**: High-performance HTTP client and request processing
+-   **Electron**: Cross-platform desktop application framework
+-   **React 19**: Modern UI library with latest features
+-   **TypeScript**: Type-safe development
+-   **Tailwind CSS**: Utility-first styling
 
-### কালেকশন তৈরি করা
+### UI Components
 
-1. **"New Collection"** এ ক্লিক করুন
-2. **নাম এবং বিবরণ** যোগ করুন
-3. ভবিষ্যতে ব্যবহারের জন্য **আপনার রিকোয়েস্ট সংরক্ষণ করুন**
-4. এক্সপোর্টের মাধ্যমে **আপনার টিমের সাথে শেয়ার করুন**
+-   **shadcn/ui**: High-quality, accessible component library
+-   **Radix UI**: Unstyled, accessible components
+-   **Lucide React**: Beautiful icon library
 
-### এনভায়রনমেন্ট ভেরিয়েবল ব্যবহার
+### Development Tools
 
-1. **Settings** → **Environments** এ যান
-2. একটি **নতুন এনভায়রনমেন্ট** তৈরি করুন (Dev, Staging, Production)
-3. আপনার ভেরিয়েবলের জন্য **কী-ভ্যালু পেয়ার** যোগ করুন
-4. `{{variable_name}}` সিনট্যাক্স ব্যবহার করে তাদের রেফারেন্স করুন
+-   **React Scripts**: Build tooling and development server
+-   **PostCSS**: CSS processing
+-   **ESLint**: Code quality and consistency
 
 ---
 
-## 🤝 অবদান রাখুন
+## 📖 Usage
 
-আমরা কমিউনিটি থেকে অবদানকে স্বাগত জানাই! বাগ ফিক্স, নতুন ফিচার, ডকুমেন্টেশন উন্নতি, বা অনুবাদ যাই হোক না কেন, আপনার সাহায্য আবাবিলকে সবার জন্য আরও ভালো করে তোলে।
+### Making Your First Request
 
-### কিভাবে অবদান রাখবেন
+1. **Launch Ababil Studio**
+2. **Select HTTP method** (GET, POST, etc.)
+3. **Enter the URL** of your API endpoint
+4. **Add headers, parameters, or body** as needed
+5. **Click Send** and view the response instantly
 
-1. **রিপোজিটরি ফর্ক করুন**
+### Creating Collections
+
+1. Click on **"New Collection"**
+2. Add a **name and description**
+3. **Save your requests** for future use
+4. **Share** with your team via export
+
+### Using Environment Variables
+
+1. Go to **Settings** → **Environments**
+2. Create a **new environment** (Dev, Staging, Production)
+3. Add **key-value pairs** for your variables
+4. Reference them using `{{variable_name}}` syntax
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Whether it's bug fixes, new features, documentation improvements, or translations, your help makes Ababil better for everyone.
+
+### How to Contribute
+
+1. **Fork the repository**
 
     ```bash
     gh repo fork AbabilX/Ababil-Studio
     ```
 
-2. **একটি ফিচার ব্রাঞ্চ তৈরি করুন**
+2. **Create a feature branch**
 
     ```bash
     git checkout -b feature/amazing-feature
     ```
 
-3. **আপনার পরিবর্তন করুন** এবং কমিট করুন
+3. **Make your changes** and commit
 
     ```bash
     git commit -m 'Add some amazing feature'
     ```
 
-4. **আপনার ব্রাঞ্চে পুশ করুন**
+4. **Push to your branch**
 
     ```bash
     git push origin feature/amazing-feature
     ```
 
-5. **একটি Pull Request খুলুন**
+5. **Open a Pull Request**
 
-### ডেভেলপমেন্ট গাইডলাইন
+### Development Guidelines
 
--   বিদ্যমান কোড স্টাইল এবং কনভেনশন অনুসরণ করুন
--   স্পষ্ট, বর্ণনামূলক কমিট মেসেজ লিখুন
--   নতুন ফিচারের জন্য টেস্ট যোগ করুন
--   প্রয়োজন অনুযায়ী ডকুমেন্টেশন আপডেট করুন
--   PR সাবমিট করার আগে সমস্ত টেস্ট পাস নিশ্চিত করুন
-
----
-
-## 🐛 বাগ রিপোর্ট ও ফিচার অনুরোধ
-
-একটি বাগ খুঁজে পেয়েছেন বা নতুন ফিচারের জন্য আইডিয়া আছে? আমরা আপনার কাছ থেকে শুনতে চাই!
-
--   **বাগ রিপোর্ট**: [একটি ইস্যু খুলুন](https://github.com/AbabilX/Ababil-Studio/issues/new?template=bug_report.md)
--   **ফিচার অনুরোধ**: [একটি ইস্যু খুলুন](https://github.com/AbabilX/Ababil-Studio/issues/new?template=feature_request.md)
--   **সিকিউরিটি ইস্যু**: দয়া করে সরাসরি মেইন্টেইনারদের ইমেইল করুন
+-   Follow the existing code style and conventions
+-   Write clear, descriptive commit messages
+-   Add tests for new features
+-   Update documentation as needed
+-   Ensure all tests pass before submitting PR
 
 ---
 
-## 📜 লাইসেন্স
+## 🐛 Bug Reports & Feature Requests
 
-এই প্রজেক্টটি **MIT লাইসেন্স** এর অধীনে লাইসেন্সকৃত - বিস্তারিত জানতে [LICENSE](LICENSE) ফাইল দেখুন।
+Found a bug or have an idea for a new feature? We'd love to hear from you!
 
----
-
-## 🙏 কৃতজ্ঞতা
-
--   Postman এর চমৎকার API টেস্টিং অভিজ্ঞতা দ্বারা অনুপ্রাণিত
--   আশ্চর্যজনক ওপেন-সোর্স প্রযুক্তি দিয়ে তৈরি
--   সমস্ত অবদানকারী এবং সমর্থকদের প্রতি বিশেষ ধন্যবাদ
-
-### 🌟 মূল অবদানকারী
-
--   **[সামিন সোহাগ](https://github.com/saminsohag)** - Rust ব্যাকএন্ড আর্কিটেকচার এবং পারফরম্যান্স ইঞ্জিনিয়ারিং
+-   **Bug Reports**: [Open an issue](https://github.com/AbabilX/Ababil-Studio/issues/new?template=bug_report.md)
+-   **Feature Requests**: [Open an issue](https://github.com/AbabilX/Ababil-Studio/issues/new?template=feature_request.md)
+-   **Security Issues**: Please email directly to the maintainers
 
 ---
 
-## 📞 যোগাযোগ ও কমিউনিটি
+## 📜 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+-   Inspired by Postman's excellent API testing experience
+-   Built with amazing open-source technologies
+-   Special thanks to all contributors and supporters
+
+### 🌟 Core Contributors
+
+-   **[Samin Sohag](https://github.com/saminsohag)** - Rust Backend Architecture & Performance Engineering
+
+---
+
+## 📞 Contact & Community
 
 -   **GitHub**: [AbabilX/Ababil-Studio](https://github.com/AbabilX/Ababil-Studio)
--   **রিলিজ**: [সর্বশেষ ভার্সন ডাউনলোড করুন](https://github.com/AbabilX/Ababil-Studio/releases)
--   **ইস্যু**: [বাগ রিপোর্ট করুন বা ফিচার অনুরোধ করুন](https://github.com/AbabilX/Ababil-Studio/issues)
--   **আলোচনা**: [কথোপকথনে যোগ দিন](https://github.com/AbabilX/Ababil-Studio/discussions)
+-   **Releases**: [Download latest version](https://github.com/AbabilX/Ababil-Studio/releases)
+-   **Issues**: [Report bugs or request features](https://github.com/AbabilX/Ababil-Studio/issues)
+-   **Discussions**: [Join the conversation](https://github.com/AbabilX/Ababil-Studio/discussions)
 
 ---
 
-## 🗺️ রোডম্যাপ
+## 🗺️ Roadmap
 
--   [ ] GraphQL সাপোর্ট
--   [ ] WebSocket টেস্টিং
--   [ ] gRPC সাপোর্ট
--   [ ] API মকিং ক্ষমতা
--   [ ] স্বয়ংক্রিয় টেস্টিং ওয়ার্কফ্লো
--   [ ] টিম কোলাবরেশন ফিচার
--   [ ] ক্লাউড সিঙ্ক (ঐচ্ছিক)
--   [ ] প্লাগইন সিস্টেম
--   [ ] CLI সংস্করণ
+-   [ ] GraphQL support
+-   [ ] WebSocket testing
+-   [ ] gRPC support
+-   [ ] API mocking capabilities
+-   [ ] Automated testing workflows
+-   [ ] Team collaboration features
+-   [ ] Cloud sync (optional)
+-   [ ] Plugin system
+-   [ ] CLI version
 
 ---
 
 <div align="center">
-  <p>আবাবিল টিম কর্তৃক ❤️ দিয়ে তৈরি</p>
+  <p>Made with ❤️ by the Ababil team</p>
   <p>
-    <a href="https://github.com/AbabilX/Ababil-Studio">⭐ GitHub এ আমাদের স্টার দিন</a> •
-    <a href="https://github.com/AbabilX/Ababil-Studio/releases">📦 ডাউনলোড করুন</a> •
-    <a href="https://github.com/AbabilX/Ababil-Studio/issues">🐛 একটি বাগ রিপোর্ট করুন</a> •
-    <a href="https://github.com/AbabilX/Ababil-Studio/discussions">💬 আলোচনায় যোগ দিন</a>
+    <a href="https://github.com/AbabilX/Ababil-Studio">⭐ Star us on GitHub</a> •
+    <a href="https://github.com/AbabilX/Ababil-Studio/releases">📦 Download</a> •
+    <a href="https://github.com/AbabilX/Ababil-Studio/issues">🐛 Report a Bug</a> •
+    <a href="https://github.com/AbabilX/Ababil-Studio/discussions">💬 Join Discussion</a>
   </p>
 </div>
