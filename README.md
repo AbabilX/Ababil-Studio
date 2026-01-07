@@ -2,10 +2,10 @@
   <img src="readme/banner.png" alt="Ababil Studio Banner" width="100%">
   
   <p>
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop/stargazers"><img src="https://img.shields.io/github/stars/Muradian-OSP/Ababil-Desktop?style=social" alt="GitHub stars"></a>
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop/issues"><img src="https://img.shields.io/github/issues/Muradian-OSP/Ababil-Desktop" alt="GitHub issues"></a>
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop/pulls"><img src="https://img.shields.io/github/issues-pr/Muradian-OSP/Ababil-Desktop" alt="GitHub pull requests"></a>
+    <a href="https://github.com/AbabilX/Ababil-Studio/stargazers"><img src="https://img.shields.io/github/stars/AbabilX/Ababil-Studio?style=social" alt="GitHub stars"></a>
+    <a href="https://github.com/AbabilX/Ababil-Studio/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+    <a href="https://github.com/AbabilX/Ababil-Studio/releases"><img src="https://img.shields.io/badge/version-1.0.0-brightgreen.svg" alt="Version"></a>
+    <a href="https://github.com/AbabilX/Ababil-Studio/issues"><img src="https://img.shields.io/github/issues/AbabilX/Ababil-Studio" alt="GitHub issues"></a>
   </p>
 
   <p>
@@ -76,8 +76,10 @@
 #### অপশন ১: প্রি-বিল্ট বাইনারি ডাউনলোড
 
 ```bash
-# শীঘ্রই আসছে - রিলিজ পেজ চেক করুন
-https://github.com/Muradian-OSP/Ababil-Desktop/releases
+# সর্বশেষ রিলিজ ডাউনলোড করুন
+https://github.com/AbabilX/Ababil-Studio/releases/
+
+# v1.0.0 - প্রথম স্টেবল রিলিজ এখন উপলব্ধ!
 ```
 
 #### অপশন ২: সোর্স থেকে বিল্ড করুন
@@ -85,8 +87,8 @@ https://github.com/Muradian-OSP/Ababil-Desktop/releases
 1. **রিপোজিটরি ক্লোন করুন**
 
     ```bash
-    git clone https://github.com/Muradian-OSP/Ababil-Desktop.git
-    cd Ababil-Desktop
+    git clone https://github.com/AbabilX/Ababil-Studio.git
+    cd Ababil-Studio
     ```
 
 2. **ডিপেন্ডেন্সি ইনস্টল করুন**
@@ -226,7 +228,7 @@ https://github.com/Muradian-OSP/Ababil-Desktop/releases
 1. **রিপোজিটরি ফর্ক করুন**
 
     ```bash
-    gh repo fork Muradian-OSP/Ababil-Desktop
+    gh repo fork AbabilX/Ababil-Studio
     ```
 
 2. **একটি ফিচার ব্রাঞ্চ তৈরি করুন**
@@ -263,8 +265,8 @@ https://github.com/Muradian-OSP/Ababil-Desktop/releases
 
 একটি বাগ খুঁজে পেয়েছেন বা নতুন ফিচারের জন্য আইডিয়া আছে? আমরা আপনার কাছ থেকে শুনতে চাই!
 
--   **বাগ রিপোর্ট**: [একটি ইস্যু খুলুন](https://github.com/Muradian-OSP/Ababil-Desktop/issues/new?template=bug_report.md)
--   **ফিচার অনুরোধ**: [একটি ইস্যু খুলুন](https://github.com/Muradian-OSP/Ababil-Desktop/issues/new?template=feature_request.md)
+-   **বাগ রিপোর্ট**: [একটি ইস্যু খুলুন](https://github.com/AbabilX/Ababil-Studio/issues/new?template=bug_report.md)
+-   **ফিচার অনুরোধ**: [একটি ইস্যু খুলুন](https://github.com/AbabilX/Ababil-Studio/issues/new?template=feature_request.md)
 -   **সিকিউরিটি ইস্যু**: দয়া করে সরাসরি মেইন্টেইনারদের ইমেইল করুন
 
 ---
@@ -289,9 +291,10 @@ https://github.com/Muradian-OSP/Ababil-Desktop/releases
 
 ## 📞 যোগাযোগ ও কমিউনিটি
 
--   **GitHub**: [Muradian-OSP/Ababil-Desktop](https://github.com/Muradian-OSP/Ababil-Desktop)
--   **ইস্যু**: [বাগ রিপোর্ট করুন বা ফিচার অনুরোধ করুন](https://github.com/Muradian-OSP/Ababil-Desktop/issues)
--   **আলোচনা**: [কথোপকথনে যোগ দিন](https://github.com/Muradian-OSP/Ababil-Desktop/discussions)
+-   **GitHub**: [AbabilX/Ababil-Studio](https://github.com/AbabilX/Ababil-Studio)
+-   **রিলিজ**: [সর্বশেষ ভার্সন ডাউনলোড করুন](https://github.com/AbabilX/Ababil-Studio/releases)
+-   **ইস্যু**: [বাগ রিপোর্ট করুন বা ফিচার অনুরোধ করুন](https://github.com/AbabilX/Ababil-Studio/issues)
+-   **আলোচনা**: [কথোপকথনে যোগ দিন](https://github.com/AbabilX/Ababil-Studio/discussions)
 
 ---
 
@@ -312,8 +315,9 @@ https://github.com/Muradian-OSP/Ababil-Desktop/releases
 <div align="center">
   <p>আবাবিল টিম কর্তৃক ❤️ দিয়ে তৈরি</p>
   <p>
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop">⭐ GitHub এ আমাদের স্টার দিন</a> •
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop/issues">🐛 একটি বাগ রিপোর্ট করুন</a> •
-    <a href="https://github.com/Muradian-OSP/Ababil-Desktop/discussions">💬 আলোচনায় যোগ দিন</a>
+    <a href="https://github.com/AbabilX/Ababil-Studio">⭐ GitHub এ আমাদের স্টার দিন</a> •
+    <a href="https://github.com/AbabilX/Ababil-Studio/releases">📦 ডাউনলোড করুন</a> •
+    <a href="https://github.com/AbabilX/Ababil-Studio/issues">🐛 একটি বাগ রিপোর্ট করুন</a> •
+    <a href="https://github.com/AbabilX/Ababil-Studio/discussions">💬 আলোচনায় যোগ দিন</a>
   </p>
 </div>
